@@ -3,6 +3,10 @@
 
 namespace ExRogue
 {
+	class DunGenError : public std::exception
+	{
+	};
+
 	struct DungGenProps
 	{
 		Size size;

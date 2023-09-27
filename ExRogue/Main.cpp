@@ -15,7 +15,8 @@ void Main()
 	const Font font{FontMethod::MSDF, 48, Typeface::Bold};
 
 	const MapGrid grid = GenerateFreshDungeon(DungGenProps{
-		.size = {80, 80}
+		.size = {80, 80},
+		.areaDivision = 8,
 	});
 
 	Camera2D camera{Scene::Center(), 1.0};
