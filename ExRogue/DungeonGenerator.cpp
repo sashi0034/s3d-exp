@@ -117,53 +117,82 @@ namespace ExRogue
 		return areaRooms;
 	}
 
+	void addPathsBetweenRoomsHorizontal(
+		Array<RoomPathway>& paths, const AreaRoom& leftTarget, const AreaRoom& rightTarget)
+	{
+		const int dividedX = rightTarget.area.leftX();
+		const int y1 = Random(leftTarget.room.topY() + 1, leftTarget.room.bottomY() - 2);
+		const int y2 = Random(rightTarget.room.topY() + 1, rightTarget.room.bottomY() - 2);
+		paths.push_back(RoomPathway::FromHorizontal(
+			Point(leftTarget.room.rightX(), y1), dividedX - leftTarget.room.rightX()));
+		paths.push_back(RoomPathway::FromVertical(
+			Point(dividedX, std::min(y1, y2)), std::abs(y1 - y2) + 1));
+		paths.push_back(RoomPathway::FromHorizontal(
+			Point(dividedX, y2), rightTarget.room.leftX() - dividedX));
+	}
 
-	Array<RoomPathway> connectRoomsByPath(const Array<AreaRoom>& areaRooms)
+	void addPathsBetweenRoomsVertical(
+		Array<RoomPathway>& paths, const AreaRoom& topTarget, const AreaRoom& bottomTarget)
+	{
+		const int dividedY = bottomTarget.area.topY();
+		const int x1 = Random(topTarget.room.leftX() + 1, topTarget.room.rightX() - 2);
+		const int x2 = Random(bottomTarget.room.leftX() + 1, bottomTarget.room.rightX() - 2);
+		paths.push_back(RoomPathway::FromVertical(
+			Point(x1, topTarget.room.bottomY()), dividedY - topTarget.room.bottomY()));
+		paths.push_back(RoomPathway::FromHorizontal(
+			Point(std::min(x1, x2), dividedY), std::abs(x1 - x2) + 1));
+		paths.push_back(RoomPathway::FromVertical(
+			Point(x2, dividedY), bottomTarget.room.topY() - dividedY));
+	}
+
+	Array<RoomPathway> connectRoomsByPaths(const Array<AreaRoom>& areaRooms)
 	{
 		Array<RoomPathway> paths{Arg::reserve(areaRooms.size() * 2)};
-		Array<bool> connectedFlags{};
-		connectedFlags.resize(areaRooms.size());
-		int connectedCount = 0;
+		Array<int> connectedIndexes{Arg::reserve(areaRooms.size())};
+		Array<int> nextConnectIndexQueue{};
+		nextConnectIndexQueue.push_back(0);
 
-		while (connectedCount < areaRooms.size())
+		while (connectedIndexes.size() < areaRooms.size())
 		{
-			const int index1 = Random(0llu, areaRooms.size() - 1);
-			const int index2 = Random(0llu, areaRooms.size() - 1);
-			if (index1 == index2) continue;
-			if (connectedFlags[index1] && connectedFlags[index2]) continue;
-			const auto& target1 = areaRooms[index1];
-			const auto& target2 = areaRooms[index2];
-			if (target1.area.rightX() == target2.area.leftX())
+			if (nextConnectIndexQueue.size() == 0)
+				throw DungGenError();
+
+			// キューから次の対象を取り出す
+			const int index1 = nextConnectIndexQueue[0];
+			nextConnectIndexQueue.pop_front();
+
+			// インデックそれぞれに対して調べていく
+			for (int index2 = 0; index2 < areaRooms.size(); ++index2)
 			{
-				// 右左で接続
-				const int dividedX = target2.area.leftX();
-				const int y1 = Random(target1.room.topY() + 1, target1.room.bottomY() - 2);
-				const int y2 = Random(target2.room.topY() + 1, target2.room.bottomY() - 2);
-				paths.push_back(RoomPathway::FromHorizontal(
-					Point(target1.room.rightX(), y1), dividedX - target1.room.rightX()));
-				paths.push_back(RoomPathway::FromVertical(
-					Point(dividedX, std::min(y1, y2)), std::abs(y1 - y2) + 1));
-				paths.push_back(RoomPathway::FromHorizontal(
-					Point(dividedX, y2), target2.room.leftX() - dividedX));
-				connectedCount += (connectedFlags[index1] == false) + (connectedFlags[index2] == false);
-				connectedFlags[index1] = true;
-				connectedFlags[index2] = true;
-			}
-			else if (target1.area.bottomY() == target2.area.topY())
-			{
-				// 下上で接続
-				const int dividedY = target2.area.topY();
-				const int x1 = Random(target1.room.leftX() + 1, target1.room.rightX() - 2);
-				const int x2 = Random(target2.room.leftX() + 1, target2.room.rightX() - 2);
-				paths.push_back(RoomPathway::FromVertical(
-					Point(x1, target1.room.bottomY()), dividedY - target1.room.bottomY()));
-				paths.push_back(RoomPathway::FromHorizontal(
-					Point(std::min(x1, x2), dividedY), std::abs(x1 - x2) + 1));
-				paths.push_back(RoomPathway::FromVertical(
-					Point(x2, dividedY), target2.room.topY() - dividedY));
-				connectedCount += (connectedFlags[index1] == false) + (connectedFlags[index2] == false);
-				connectedFlags[index1] = true;
-				connectedFlags[index2] = true;
+				// 自分自身を無視
+				if (index2 == index1) continue;
+
+				// 既に接続済みなら無視
+				if (connectedIndexes.contains(index2)) continue;
+
+				const auto& target1 = areaRooms[index1];
+				const auto& target2 = areaRooms[index2];
+
+				const bool connectRightLeft = target1.area.rightX() == target2.area.leftX();
+				const bool connectLeftRight = target1.area.leftX() == target2.area.rightX();
+				const bool connectBottomTop = target1.area.bottomY() == target2.area.topY();
+				const bool connectTopBottom = target1.area.topY() == target2.area.bottomY();
+
+				if (connectRightLeft)
+					addPathsBetweenRoomsHorizontal(paths, target1, target2);
+				else if (connectLeftRight)
+					addPathsBetweenRoomsHorizontal(paths, target2, target1);
+				else if (connectBottomTop)
+					addPathsBetweenRoomsVertical(paths, target1, target2);
+				else if (connectTopBottom)
+					addPathsBetweenRoomsVertical(paths, target2, target1);
+
+				if (connectRightLeft || connectLeftRight || connectBottomTop || connectTopBottom)
+				{
+					// 今回の接続したインデックス情報を確定し、次回はそのインデックスから派生させる
+					connectedIndexes.push_back(index2);
+					nextConnectIndexQueue.push_back(index2);
+				}
 			}
 		}
 		return std::move(paths);
@@ -191,7 +220,7 @@ namespace ExRogue
 		auto areaRoomList = distributeRoomFromArea(separatedAreas);
 
 		// 部屋を通路でつなぐ
-		auto connectedPaths = connectRoomsByPath(areaRoomList);
+		auto connectedPaths = connectRoomsByPaths(areaRoomList);
 
 		// 部屋を反映
 		for (auto&& areaRoom : areaRoomList)
