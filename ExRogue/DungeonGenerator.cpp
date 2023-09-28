@@ -37,6 +37,7 @@ namespace ExRogue
 	constexpr uint32 minAreaWidthHeight = 12;
 	constexpr uint32 minRoomSize = 20;
 	constexpr uint32 minRoomWidthHeight = 6;
+	constexpr uint32 areaRoomPadding = 2;
 
 	SeparatedArea popAreaForSeparate(Array<SeparatedArea>& areas)
 	{
@@ -93,7 +94,7 @@ namespace ExRogue
 			bool isSucceeded = false;
 			for (auto in : step(maxProgramLoopCount))
 			{
-				constexpr uint8 padding = 2;
+				constexpr uint8 padding = areaRoomPadding;
 				const int x = Random(area.leftX() + padding, area.rightX() - 1 - padding);
 				const int w = Random(x, area.rightX() - 1 - padding) - x;
 				if (w <= minRoomWidthHeight) continue;
@@ -121,8 +122,32 @@ namespace ExRogue
 		Array<RoomPathway>& paths, const AreaRoom& leftTarget, const AreaRoom& rightTarget)
 	{
 		const int dividedX = rightTarget.area.leftX();
-		const int y1 = Random(leftTarget.room.topY() + 1, leftTarget.room.bottomY() - 2);
-		const int y2 = Random(rightTarget.room.topY() + 1, rightTarget.room.bottomY() - 2);
+
+		const std::pair<int, int> range1{leftTarget.room.topY() + 1, leftTarget.room.bottomY() - 2};
+		const std::pair<int, int> range2{rightTarget.room.topY() + 1, rightTarget.room.bottomY() - 2};
+
+		// 既に接続済みのパスを列挙
+		const auto leftExists = paths.filter([&](const RoomPathway& p)
+		{
+			return p.IsHorizontal() && range1.first <= p.y && p.y <= range1.second && p.x == leftTarget.room.rightX();
+		});
+		const auto rightExists = paths.filter([&](const RoomPathway& p)
+		{
+			return p.IsHorizontal() && range2.first <= p.y && p.y <= range2.second && p.x == dividedX;
+		});
+
+		int y1;
+		int y2;
+		while (true)
+		{
+			y1 = Random(range1.first, range1.second);
+			y2 = Random(range2.first, range2.second);
+			// パスが連続しないようにする
+			if (leftExists.any([&](const RoomPathway& p) { return std::abs(p.y - y1) == 1; })) continue;
+			if (rightExists.any([&](const RoomPathway& p) { return std::abs(p.y - y2) == 1; })) continue;
+			break;
+		}
+
 		paths.push_back(RoomPathway::FromHorizontal(
 			Point(leftTarget.room.rightX(), y1), dividedX - leftTarget.room.rightX()));
 		paths.push_back(RoomPathway::FromVertical(
@@ -135,8 +160,32 @@ namespace ExRogue
 		Array<RoomPathway>& paths, const AreaRoom& topTarget, const AreaRoom& bottomTarget)
 	{
 		const int dividedY = bottomTarget.area.topY();
-		const int x1 = Random(topTarget.room.leftX() + 1, topTarget.room.rightX() - 2);
-		const int x2 = Random(bottomTarget.room.leftX() + 1, bottomTarget.room.rightX() - 2);
+
+		const std::pair<int, int> range1{topTarget.room.leftX() + 1, topTarget.room.rightX() - 2};
+		const std::pair<int, int> range2{bottomTarget.room.leftX() + 1, bottomTarget.room.rightX() - 2};
+
+		// 既に接続済みのパスを列挙
+		const auto topExists = paths.filter([&](const RoomPathway& p)
+		{
+			return p.IsVertical() && range1.first <= p.x && p.x <= range1.second && p.y == topTarget.room.bottomY();
+		});
+		const auto bottomExists = paths.filter([&](const RoomPathway& p)
+		{
+			return p.IsVertical() && range2.first <= p.x && p.x <= range2.second && p.y == dividedY;
+		});
+
+		int x1;
+		int x2;
+		while (true)
+		{
+			x1 = Random(range1.first, range1.second);
+			x2 = Random(range2.first, range2.second);
+			// パスが連続しないようにする
+			if (topExists.any([&](const RoomPathway& p) { return std::abs(p.x - x1) == 1; })) continue;
+			if (bottomExists.any([&](const RoomPathway& p) { return std::abs(p.x - x2) == 1; })) continue;
+			break;
+		}
+
 		paths.push_back(RoomPathway::FromVertical(
 			Point(x1, topTarget.room.bottomY()), dividedY - topTarget.room.bottomY()));
 		paths.push_back(RoomPathway::FromHorizontal(
@@ -150,6 +199,7 @@ namespace ExRogue
 		Array<RoomPathway> paths{Arg::reserve(areaRooms.size() * 2)};
 		Array<int> connectedIndexes{Arg::reserve(areaRooms.size())};
 		Array<int> nextConnectIndexQueue{};
+		connectedIndexes.push_back(0);
 		nextConnectIndexQueue.push_back(0);
 
 		while (connectedIndexes.size() < areaRooms.size())
