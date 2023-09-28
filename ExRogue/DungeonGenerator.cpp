@@ -12,10 +12,10 @@ namespace ExRogue
 	};
 
 	constexpr uint32 maxProgramLoopCount = 100000;
-	constexpr uint32 minAreaSize = 20;
-	constexpr uint32 minAreaWidthHeight = 5;
-	constexpr uint32 minRoomSize = 10;
-	constexpr uint32 minRoomWidthHeight = 3;
+	constexpr uint32 minAreaSize = 40;
+	constexpr uint32 minAreaWidthHeight = 8;
+	constexpr uint32 minRoomSize = 20;
+	constexpr uint32 minRoomWidthHeight = 4;
 
 	SeparatedArea PopAreaForSeparate(Array<SeparatedArea>& areas)
 	{
@@ -36,20 +36,20 @@ namespace ExRogue
 		for (auto in : step(maxProgramLoopCount))
 		{
 			std::pair<SeparatedArea, SeparatedArea> result;
-			const bool isHorizontal = Random(0, 1);
-			if (isHorizontal)
+			const bool isVertical = Random(0, 1);
+			if (isVertical)
 			{
-				const int sepY = Random(area.y, area.y + area.h - 1);
+				const int sepY = Random(area.topY(), area.bottomY());
 				const int sepH = sepY - area.y;
 				if (sepH <= minAreaWidthHeight || (area.h - sepH) <= minAreaWidthHeight) continue;
 				result = std::pair{
 					SeparatedArea{area.x, area.y, area.w, sepH},
-					SeparatedArea{area.x, sepH, area.w, area.h - sepH}
+					SeparatedArea{area.x, sepY, area.w, area.h - sepH}
 				};
 			}
 			else
 			{
-				const int sepX = Random(area.x, area.x + area.w - 1);
+				const int sepX = Random(area.leftX(), area.rightX());
 				const int sepW = sepX - area.x;
 				if (sepW <= minAreaWidthHeight || (area.w - sepW) <= minAreaWidthHeight) continue;
 				result = std::pair{
@@ -75,7 +75,7 @@ namespace ExRogue
 			for (auto in : step(maxProgramLoopCount))
 			{
 				const int x = Random(area.leftX() + 1, area.rightX() - 1);
-				const int w = Random(x, area.rightX() + 1) - x;
+				const int w = Random(x, area.rightX() - 1) - x;
 				if (w <= minRoomWidthHeight) continue;
 
 				const int y = Random(area.topY() + 1, area.bottomY() - 1);
