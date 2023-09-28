@@ -13,22 +13,19 @@ namespace ExRogue
 
 	constexpr uint32 maxProgramLoopCount = 100000;
 	constexpr uint32 minAreaSize = 40;
-	constexpr uint32 minAreaWidthHeight = 8;
+	constexpr uint32 minAreaWidthHeight = 12;
 	constexpr uint32 minRoomSize = 20;
-	constexpr uint32 minRoomWidthHeight = 4;
+	constexpr uint32 minRoomWidthHeight = 6;
 
 	SeparatedArea PopAreaForSeparate(Array<SeparatedArea>& areas)
 	{
-		for (auto in : step(maxProgramLoopCount))
-		{
-			const int index = Random(0llu, areas.size() - 1);
-			const auto area = areas[index];
-			if (area.area() * 2 <= minAreaSize) continue;
-			areas.remove_at(index);
-			// TODO: 最低サイズを設定
-			return area;
-		}
-		throw DunGenError();
+		// 面積が大きいものを分割対象にする
+		areas.sort_by([](const SeparatedArea& l, const SeparatedArea& r) { return l.area() > r.area(); });
+		constexpr int index = 0; // Random(0llu, areas.size() - 1);
+		const auto area = areas[index];
+		if (area.area() * 2 <= minAreaSize) throw DunGenError();
+		areas.remove_at(index);
+		return area;
 	}
 
 	std::pair<SeparatedArea, SeparatedArea> SeparateArea(const SeparatedArea& area)
@@ -74,12 +71,13 @@ namespace ExRogue
 			bool isSucceeded = false;
 			for (auto in : step(maxProgramLoopCount))
 			{
-				const int x = Random(area.leftX() + 1, area.rightX() - 1);
-				const int w = Random(x, area.rightX() - 1) - x;
+				constexpr uint8 padding = 2;
+				const int x = Random(area.leftX() + padding, area.rightX() - padding);
+				const int w = Random(x, area.rightX() - padding) - x;
 				if (w <= minRoomWidthHeight) continue;
 
-				const int y = Random(area.topY() + 1, area.bottomY() - 1);
-				const int h = Random(y, area.bottomY() - 1) - y;
+				const int y = Random(area.topY() + padding, area.bottomY() - padding);
+				const int h = Random(y, area.bottomY() - padding) - y;
 				if (h <= minRoomWidthHeight) continue;
 
 				if (w * h <= minRoomSize) continue;
