@@ -5,9 +5,17 @@ namespace ExRogue
 {
 	using SeparatedArea = Rect;
 
+	struct AreaRoom
+	{
+		SeparatedArea area;
+		Rect room;
+	};
+
 	constexpr uint32 maxProgramLoopCount = 100000;
 	constexpr uint32 minAreaSize = 20;
-	constexpr uint32 minAreaWidthHeight = 4;
+	constexpr uint32 minAreaWidthHeight = 5;
+	constexpr uint32 minRoomSize = 10;
+	constexpr uint32 minRoomWidthHeight = 3;
 
 	SeparatedArea PopAreaForSeparate(Array<SeparatedArea>& areas)
 	{
@@ -58,6 +66,37 @@ namespace ExRogue
 		throw DunGenError();
 	}
 
+	Array<AreaRoom> DistributeRoomFromArea(const Array<SeparatedArea>& areas)
+	{
+		Array<AreaRoom> areaRooms{Arg::reserve(areas.size())};
+		for (auto&& area : areas)
+		{
+			bool isSucceeded = false;
+			for (auto in : step(maxProgramLoopCount))
+			{
+				const int x = Random(area.leftX() + 1, area.rightX() - 1);
+				const int w = Random(x, area.rightX() + 1) - x;
+				if (w <= minRoomWidthHeight) continue;
+
+				const int y = Random(area.topY() + 1, area.bottomY() - 1);
+				const int h = Random(y, area.bottomY() - 1) - y;
+				if (h <= minRoomWidthHeight) continue;
+
+				if (w * h <= minRoomSize) continue;
+
+				// 部屋割り当て成功
+				areaRooms.push_back(AreaRoom{
+					.area = area,
+					.room = Rect{x, y, w, h}
+				});
+				isSucceeded = true;
+				break;
+			}
+			if (isSucceeded == false) throw DunGenError();
+		}
+		return areaRooms;
+	}
+
 	MapGrid GenerateFreshDungeon(const DungGenProps& props)
 	{
 		MapGrid dung{props.size};
@@ -65,17 +104,28 @@ namespace ExRogue
 		Array<SeparatedArea> separatedAreas{Arg::reserve(props.areaDivision)};
 		separatedAreas.push_back(SeparatedArea({0, 0}, props.size));
 
+		// 全体をエリアに分割
 		while (separatedAreas.size() < props.areaDivision)
 		{
+			// 分割対象を引っ張る
 			const auto separateTarget = PopAreaForSeparate(separatedAreas);
+			// その対象を2分割
 			const auto separated = SeparateArea(separateTarget);
 			separatedAreas.push_back(separated.first);
 			separatedAreas.push_back(separated.second);
 		}
 
-		// TODO: ちゃんと実装
-		dung.At({1, 1}).kind = TerrainKind::Floor;
-		dung.At({2, 2}).kind = TerrainKind::Floor;
+		// 分割されたエリアに部屋を作る
+		auto areaRoomList = DistributeRoomFromArea(separatedAreas);
+
+		// 部屋を反映
+		for (auto&& areaRoom : areaRoomList)
+		{
+			for (auto&& p : step(areaRoom.room.pos, areaRoom.room.size))
+			{
+				dung.At(p).kind = TerrainKind::Floor;
+			}
+		}
 
 		return dung;
 	}

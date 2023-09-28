@@ -14,10 +14,12 @@ void Main()
 
 	const Font font{FontMethod::MSDF, 48, Typeface::Bold};
 
-	const MapGrid grid = GenerateFreshDungeon(DungGenProps{
+	auto dunGenProps = DungGenProps{
 		.size = {80, 80},
 		.areaDivision = 8,
-	});
+	};
+
+	MapGrid grid{{}};
 
 	Camera2D camera{Scene::Center(), 1.0};
 
@@ -26,24 +28,38 @@ void Main()
 		// Transformer2D transformer{Mat3x2::Scale(1.0, 1.0).translated(Point{0, 0})};
 
 		camera.update();
-		const auto t = camera.createTransformer();
-
-		for (int x = 0; x < grid.Data().size().x; ++x)
 		{
-			for (int y = 0; y < grid.Data().size().y; ++y)
+			const auto t = camera.createTransformer();
+
+			for (int x = 0; x < grid.Data().size().x; ++x)
 			{
-				auto&& cell = grid.At({x, y});
-				constexpr int size = 12;
-				switch (cell.kind)
+				for (int y = 0; y < grid.Data().size().y; ++y)
 				{
-				case TerrainKind::Wall:
-					(void)emojiWall.resized(size, size).draw(x * size, y * size);
-					break;
-				case TerrainKind::Floor:
-					(void)emojiFloor.resized(size, size).draw(x * size, y * size);
-					break;
-				default: ;
+					auto&& cell = grid.At({x, y});
+					constexpr int size = 12;
+					switch (cell.kind)
+					{
+					case TerrainKind::Wall:
+						(void)emojiWall.resized(size, size).draw(x * size, y * size);
+						break;
+					case TerrainKind::Floor:
+						(void)emojiFloor.resized(size, size).draw(x * size, y * size);
+						break;
+					default: ;
+					}
 				}
+			}
+		}
+
+		if (SimpleGUI::Button(U"生成", {20, 20}) ||
+			grid.HasData() == false)
+		{
+			try
+			{
+				grid = GenerateFreshDungeon(dunGenProps);
+			}
+			catch (DunGenError)
+			{
 			}
 		}
 	}
