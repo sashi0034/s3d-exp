@@ -3,7 +3,7 @@
 
 namespace ExRogue
 {
-	class DunGenError : public std::exception
+	class DungGenError : public std::exception
 	{
 	};
 

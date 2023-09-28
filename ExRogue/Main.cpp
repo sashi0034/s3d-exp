@@ -11,6 +11,7 @@ void Main()
 
 	const Texture emojiWall{U"🧱"_emoji};
 	const Texture emojiFloor{U"🟦"_emoji};
+	const Texture emojiPathway{U"🟩"_emoji};
 
 	const Font font{FontMethod::MSDF, 48, Typeface::Bold};
 
@@ -45,6 +46,9 @@ void Main()
 					case TerrainKind::Floor:
 						(void)emojiFloor.resized(size, size).draw(x * size, y * size);
 						break;
+					case TerrainKind::Pathway:
+						(void)emojiPathway.resized(size, size).draw(x * size, y * size);
+						break;
 					default: ;
 					}
 				}
@@ -58,7 +62,7 @@ void Main()
 			{
 				grid = GenerateFreshDungeon(dunGenProps);
 			}
-			catch (DunGenError)
+			catch (DungGenError)
 			{
 			}
 		}

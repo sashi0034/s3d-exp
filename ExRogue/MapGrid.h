@@ -6,6 +6,7 @@ namespace ExRogue
 	{
 		Wall,
 		Floor,
+		Pathway,
 	};
 
 	struct MapCell
