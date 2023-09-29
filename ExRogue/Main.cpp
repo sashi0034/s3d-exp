@@ -15,10 +15,12 @@ void Main()
 
 	const Font font{FontMethod::MSDF, 48, Typeface::Bold};
 
-	auto dunGenProps = DungGenProps{
+	auto dungGenProps = DungGenProps{
 		.size = {80, 80},
 		.areaDivision = 8,
 	};
+
+	auto dungGenConfig = DungGenConfig();
 
 	MapGrid grid{{}};
 
@@ -60,7 +62,7 @@ void Main()
 		{
 			try
 			{
-				grid = GenerateFreshDungeon(dunGenProps);
+				grid = GenerateFreshDungeon(dungGenProps, dungGenConfig);
 			}
 			catch (DungGenError)
 			{

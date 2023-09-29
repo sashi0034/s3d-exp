@@ -32,27 +32,28 @@ namespace ExRogue
 		Rect room;
 	};
 
-	constexpr uint32 maxProgramLoopCount = 100000;
-	constexpr uint32 minAreaSize = 40;
-	constexpr uint32 minAreaWidthHeight = 12;
-	constexpr uint32 minRoomSize = 20;
-	constexpr uint32 minRoomWidthHeight = 6;
-	constexpr uint32 areaRoomPadding = 2;
+	class DungGenInternal;
+}
 
-	SeparatedArea popAreaForSeparate(Array<SeparatedArea>& areas)
+class ExRogue::DungGenInternal
+{
+public:
+	explicit DungGenInternal(const DungGenConfig& config): config(config) { return; }
+
+	SeparatedArea popAreaForSeparate(Array<SeparatedArea>& areas) const
 	{
 		// 面積が大きいものを分割対象にする
 		areas.sort_by([](const SeparatedArea& l, const SeparatedArea& r) { return l.area() > r.area(); });
 		constexpr int index = 0; // Random(0llu, areas.size() - 1);
 		const auto area = areas[index];
-		if (area.area() * 2 <= minAreaSize) throw DungGenError();
+		if (area.area() * 2 <= config.minAreaSize) throw DungGenError();
 		areas.remove_at(index);
 		return area;
 	}
 
-	std::pair<SeparatedArea, SeparatedArea> separateArea(const SeparatedArea& area)
+	std::pair<SeparatedArea, SeparatedArea> separateArea(const SeparatedArea& area) const
 	{
-		for (auto in : step(maxProgramLoopCount))
+		for (auto in : step(config.maxProgramLoopCount))
 		{
 			std::pair<SeparatedArea, SeparatedArea> result;
 			const bool isVertical = Random(0, 1);
@@ -61,7 +62,7 @@ namespace ExRogue
 				const int sepY = Random(area.topY(), area.bottomY() - 1);
 				const int sepH1 = sepY - area.y;
 				const int sepH2 = area.h - sepH1;
-				if (sepH1 <= minAreaWidthHeight || sepH2 <= minAreaWidthHeight) continue;
+				if (sepH1 <= config.minAreaWidthHeight || sepH2 <= config.minAreaWidthHeight) continue;
 				result = std::pair{
 					SeparatedArea{area.x, area.y, area.w, sepH1},
 					SeparatedArea{area.x, sepY, area.w, sepH2}
@@ -72,38 +73,38 @@ namespace ExRogue
 				const int sepX = Random(area.leftX(), area.rightX() - 1);
 				const int sepW1 = sepX - area.x;
 				const int sepW2 = area.w - sepW1;
-				if (sepW1 <= minAreaWidthHeight || sepW2 <= minAreaWidthHeight) continue;
+				if (sepW1 <= config.minAreaWidthHeight || sepW2 <= config.minAreaWidthHeight) continue;
 				result = std::pair{
 					SeparatedArea{area.x, area.y, sepW1, area.h},
 					SeparatedArea{sepX, area.y, sepW2, area.h}
 				};
 			}
 
-			if (result.first.area() < minAreaSize || result.second.area() < minAreaSize) continue;
+			if (result.first.area() < config.minAreaSize || result.second.area() < config.minAreaSize) continue;
 
 			return result;
 		}
 		throw DungGenError();
 	}
 
-	Array<AreaRoom> distributeRoomFromArea(const Array<SeparatedArea>& areas)
+	Array<AreaRoom> distributeRoomFromArea(const Array<SeparatedArea>& areas) const
 	{
 		Array<AreaRoom> areaRooms{Arg::reserve(areas.size())};
 		for (auto&& area : areas)
 		{
 			bool isSucceeded = false;
-			for (auto in : step(maxProgramLoopCount))
+			for (auto in : step(config.maxProgramLoopCount))
 			{
-				constexpr uint8 padding = areaRoomPadding;
+				const uint8 padding = config.areaRoomPadding;
 				const int x = Random(area.leftX() + padding, area.rightX() - 1 - padding);
 				const int w = Random(x, area.rightX() - 1 - padding) - x;
-				if (w <= minRoomWidthHeight) continue;
+				if (w <= config.minRoomWidthHeight) continue;
 
 				const int y = Random(area.topY() + padding, area.bottomY() - 1 - padding);
 				const int h = Random(y, area.bottomY() - 1 - padding) - y;
-				if (h <= minRoomWidthHeight) continue;
+				if (h <= config.minRoomWidthHeight) continue;
 
-				if (w * h <= minRoomSize) continue;
+				if (w * h <= config.minRoomSize) continue;
 
 				// 部屋割り当て成功
 				areaRooms.push_back(AreaRoom{
@@ -119,7 +120,7 @@ namespace ExRogue
 	}
 
 	void addPathsBetweenRoomsHorizontal(
-		Array<RoomPathway>& paths, const AreaRoom& leftTarget, const AreaRoom& rightTarget)
+		Array<RoomPathway>& paths, const AreaRoom& leftTarget, const AreaRoom& rightTarget) const
 	{
 		const int dividedX = rightTarget.area.leftX();
 
@@ -157,7 +158,7 @@ namespace ExRogue
 	}
 
 	void addPathsBetweenRoomsVertical(
-		Array<RoomPathway>& paths, const AreaRoom& topTarget, const AreaRoom& bottomTarget)
+		Array<RoomPathway>& paths, const AreaRoom& topTarget, const AreaRoom& bottomTarget) const
 	{
 		const int dividedY = bottomTarget.area.topY();
 
@@ -194,7 +195,7 @@ namespace ExRogue
 			Point(x2, dividedY), bottomTarget.room.topY() - dividedY));
 	}
 
-	Array<RoomPathway> connectRoomsByPaths(const Array<AreaRoom>& areaRooms)
+	Array<RoomPathway> connectRoomsByPaths(const Array<AreaRoom>& areaRooms) const
 	{
 		Array<RoomPathway> paths{Arg::reserve(areaRooms.size() * 2)};
 		Array<int> connectedIndexes{Arg::reserve(areaRooms.size())};
@@ -248,8 +249,15 @@ namespace ExRogue
 		return std::move(paths);
 	}
 
-	MapGrid GenerateFreshDungeon(const DungGenProps& props)
+private:
+	const DungGenConfig& config;
+};
+
+namespace ExRogue
+{
+	MapGrid GenerateFreshDungeon(const DungGenProps& props, const DungGenConfig& config)
 	{
+		const DungGenInternal internal{config};
 		MapGrid dung{props.size};
 
 		Array<SeparatedArea> separatedAreas{Arg::reserve(props.areaDivision)};
@@ -259,18 +267,18 @@ namespace ExRogue
 		while (separatedAreas.size() < props.areaDivision)
 		{
 			// 分割対象を引っ張る
-			const auto separateTarget = popAreaForSeparate(separatedAreas);
+			const auto separateTarget = internal.popAreaForSeparate(separatedAreas);
 			// その対象を2分割
-			const auto separated = separateArea(separateTarget);
+			const auto separated = internal.separateArea(separateTarget);
 			separatedAreas.push_back(separated.first);
 			separatedAreas.push_back(separated.second);
 		}
 
 		// 分割されたエリアに部屋を作る
-		auto areaRoomList = distributeRoomFromArea(separatedAreas);
+		auto areaRoomList = internal.distributeRoomFromArea(separatedAreas);
 
 		// 部屋を通路でつなぐ
-		auto connectedPaths = connectRoomsByPaths(areaRoomList);
+		auto connectedPaths = internal.connectRoomsByPaths(areaRoomList);
 
 		// 部屋を反映
 		for (auto&& areaRoom : areaRoomList)
