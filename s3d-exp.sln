@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test1", "Test1\Test1.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExRogue", "ExRogue\ExRogue.vcxproj", "{6570438B-C740-4385-9F50-1C3DDE8D2176}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExAutoTile", "ExAutoTile\ExAutoTile.vcxproj", "{DC1BC0FC-FFB0-494E-8FBD-C7586AD53961}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{6570438B-C740-4385-9F50-1C3DDE8D2176}.Debug|x64.Build.0 = Debug|x64
 		{6570438B-C740-4385-9F50-1C3DDE8D2176}.Release|x64.ActiveCfg = Release|x64
 		{6570438B-C740-4385-9F50-1C3DDE8D2176}.Release|x64.Build.0 = Release|x64
+		{DC1BC0FC-FFB0-494E-8FBD-C7586AD53961}.Debug|x64.ActiveCfg = Debug|x64
+		{DC1BC0FC-FFB0-494E-8FBD-C7586AD53961}.Debug|x64.Build.0 = Debug|x64
+		{DC1BC0FC-FFB0-494E-8FBD-C7586AD53961}.Release|x64.ActiveCfg = Release|x64
+		{DC1BC0FC-FFB0-494E-8FBD-C7586AD53961}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
