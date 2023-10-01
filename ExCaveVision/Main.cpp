@@ -3,8 +3,12 @@
 struct CaveVisionCb
 {
 	float animRate = 0;
-	Float2 openCenter;
-	float openRadius = 0;
+};
+
+struct SoftShapeCb
+{
+	float time;
+	Float2 centerPos;
 };
 
 void Main()
@@ -13,22 +17,38 @@ void Main()
 
 	const Texture tex_aqua_noise{U"asset/tex_aqua_noise.png"};
 	const Texture tex_cosmos_noise{U"asset/tex_cosmos_noise.png"};
-	const PixelShader psCaveVision = HLSL{U"asset/cave_vision.hlsl", U"PS"};
+	const PixelShader caveVisionPs = HLSL{U"asset/cave_vision.hlsl", U"PS"};
+	const VertexShader softShapeVs = HLSL{U"asset/soft_shape.hlsl"};
 	ConstantBuffer<CaveVisionCb> caveVisionCb{};
+	ConstantBuffer<SoftShapeCb> softShapeCb{};
+	RenderTexture maskTexture{Scene::Size(), ColorF{1.0}};
 
 	while (System::Update())
 	{
-		constexpr float animSpeed = 0.3f;
-		caveVisionCb->animRate += Scene::DeltaTime() * animSpeed;
-		caveVisionCb->openCenter = Scene::Center();
-		caveVisionCb->openRadius = 128 + 8 * std::sin(Math::Pi * caveVisionCb->animRate / animSpeed);
-		caveVisionCb->openRadius = caveVisionCb->openRadius * caveVisionCb->openRadius;
-		Graphics2D::SetPSConstantBuffer(1, caveVisionCb);
-		const ScopedCustomShader2D shader{psCaveVision};
+		// マスク描画
+		{
+			ScopedRenderTarget2D target{maskTexture};
+			softShapeCb->time += Scene::DeltaTime() * 2;
+			softShapeCb->centerPos = Scene::Center();
+			maskTexture.clear(Color(0, 0, 0, 255));
+			Graphics2D::SetVSConstantBuffer(1, softShapeCb);
+			const ScopedCustomShader2D shader{softShapeVs};
 
-		Graphics2D::SetPSTexture(1, tex_aqua_noise);
-		Graphics2D::SetPSTexture(2, tex_cosmos_noise);
+			Graphics2D::DrawTriangles(360);
+		}
 
-		(void)Rect({0, 0}, Scene::Size()).draw(Color(U"#333333FF"));
+		// スクリーン描画
+		{
+			constexpr float animSpeed = 0.3f;
+			caveVisionCb->animRate += Scene::DeltaTime() * animSpeed;
+			Graphics2D::SetPSConstantBuffer(1, caveVisionCb);
+			const ScopedCustomShader2D shader{caveVisionPs};
+
+			Graphics2D::SetPSTexture(1, tex_aqua_noise);
+			Graphics2D::SetPSTexture(2, tex_cosmos_noise);
+			Graphics2D::SetPSTexture(3, maskTexture);
+
+			(void)maskTexture({0, 0}, Scene::Size()).draw(Color(U"#333333FF"));
+		}
 	}
 }

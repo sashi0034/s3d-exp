@@ -2,10 +2,10 @@
 //
 //	Textures
 //
-// Texture2D		g_texture0 : register(t0);
+Texture2D g_maskTexture : register(t0);
 Texture2D g_texture1 : register(t1);
 Texture2D g_texture2 : register(t2);
-SamplerState g_sampler0 : register(s0);
+SamplerState g_maskSampler : register(s0);
 SamplerState g_sampler1 : register(s1);
 SamplerState g_sampler2 : register(s2);
 
@@ -37,8 +37,6 @@ cbuffer PSConstants2D : register(b0)
 cbuffer CaveVisionCb : register(b1)
 {
     float g_animRate;
-    float2 g_openCenter;
-    float g_openRadius;
 }
 
 float2 calcUvTex1(s3d::PSInput input)
@@ -92,11 +90,7 @@ float4 PS(s3d::PSInput input) : SV_TARGET
     float4 color2 = g_texture2.Sample(g_sampler2, uv2);
 
     color0.rgb = (color0.rgb * 0.2 + color1.rgb * 0.4 + color2.rgb * 0.4);
-    const float openSquare =
-        square(input.position.x - g_openCenter.x) + square(input.position.y - g_openCenter.y) - g_openRadius;
-    color0.a = openSquare < 0
-                   ? 0
-                   : openSquare / 16384;
+    color0.a = 1 - g_maskTexture.Sample(g_maskSampler, input.uv).g;
 
     return (color0 * input.color) + g_colorAdd;
 }
