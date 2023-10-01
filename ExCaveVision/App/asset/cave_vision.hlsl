@@ -37,6 +37,8 @@ cbuffer PSConstants2D : register(b0)
 cbuffer CaveVisionCb : register(b1)
 {
     float g_animRate;
+    float2 g_openCenter;
+    float g_openRadius;
 }
 
 float2 calcUvTex1(s3d::PSInput input)
@@ -67,11 +69,16 @@ float2 calcUvTex2(s3d::PSInput input)
 
     const float oscillationSpeed = 2.7;
     const float oscillationAmount = 0.3;
-    uv.y = uv.y + oscillationAmount * sin(
+    uv.x = uv.x + oscillationAmount * sin(
         ((input.position.x + input.position.y) / uvStep + g_animRate * oscillationSpeed) * PI);
 
     uv = (uv + vecOne) % 1.0;
     return uv;
+}
+
+float square(float x)
+{
+    return x * x;
 }
 
 float4 PS(s3d::PSInput input) : SV_TARGET
@@ -85,6 +92,11 @@ float4 PS(s3d::PSInput input) : SV_TARGET
     float4 color2 = g_texture2.Sample(g_sampler2, uv2);
 
     color0.rgb = (color0.rgb * 0.2 + color1.rgb * 0.4 + color2.rgb * 0.4);
+    const float openSquare =
+        square(input.position.x - g_openCenter.x) + square(input.position.y - g_openCenter.y) - g_openRadius;
+    color0.a = openSquare < 0
+                   ? 0
+                   : openSquare / 16384;
 
     return (color0 * input.color) + g_colorAdd;
 }

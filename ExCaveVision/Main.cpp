@@ -3,6 +3,8 @@
 struct CaveVisionCb
 {
 	float animRate = 0;
+	Float2 openCenter;
+	float openRadius = 0;
 };
 
 void Main()
@@ -18,6 +20,9 @@ void Main()
 	{
 		constexpr float animSpeed = 0.3f;
 		caveVisionCb->animRate += Scene::DeltaTime() * animSpeed;
+		caveVisionCb->openCenter = Scene::Center();
+		caveVisionCb->openRadius = 128 + 8 * std::sin(Math::Pi * caveVisionCb->animRate / animSpeed);
+		caveVisionCb->openRadius = caveVisionCb->openRadius * caveVisionCb->openRadius;
 		Graphics2D::SetPSConstantBuffer(1, caveVisionCb);
 		const ScopedCustomShader2D shader{psCaveVision};
 
