@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExCaveVision", "ExCaveVisio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExEffect", "ExEffect\ExEffect.vcxproj", "{FBFCF7A4-9044-49F5-9802-EDB6C8B6CB3E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExMaze", "ExMaze\ExMaze.vcxproj", "{C82C8B29-B8C0-4F5A-824E-FF06EB7DC30B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +41,10 @@ Global
 		{FBFCF7A4-9044-49F5-9802-EDB6C8B6CB3E}.Debug|x64.Build.0 = Debug|x64
 		{FBFCF7A4-9044-49F5-9802-EDB6C8B6CB3E}.Release|x64.ActiveCfg = Release|x64
 		{FBFCF7A4-9044-49F5-9802-EDB6C8B6CB3E}.Release|x64.Build.0 = Release|x64
+		{C82C8B29-B8C0-4F5A-824E-FF06EB7DC30B}.Debug|x64.ActiveCfg = Debug|x64
+		{C82C8B29-B8C0-4F5A-824E-FF06EB7DC30B}.Debug|x64.Build.0 = Debug|x64
+		{C82C8B29-B8C0-4F5A-824E-FF06EB7DC30B}.Release|x64.ActiveCfg = Release|x64
+		{C82C8B29-B8C0-4F5A-824E-FF06EB7DC30B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
