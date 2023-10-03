@@ -1,5 +1,6 @@
 ﻿# include "stdafx.h" // OpenSiv3D v0.6.10
 
+template <double easing(double)>
 class ParamEasing : public IEffect
 {
 public:
@@ -13,7 +14,7 @@ public:
 
 	bool update(double timeSec) override
 	{
-		const double e = EaseInOutBack(timeSec / m_duration);
+		const double e = easing(timeSec / m_duration);
 		*m_valuePtr = m_startValue * (1 - e) + m_endValue * e;
 		return timeSec < m_duration;
 	}
@@ -30,7 +31,7 @@ void Main()
 	Scene::SetBackground(ColorF{0.7, 0.7, 0.7});
 	const Effect effect{};
 
-	const Texture emoji{U"🤖"_emoji};
+	const Texture emoji{U"📺"_emoji};
 	double scale = 1.0f;
 
 	while (System::Update())
@@ -40,7 +41,7 @@ void Main()
 		if (MouseL.down())
 		{
 			scale = 1.0;
-			effect.add<ParamEasing>(&scale, 2.0, 1.3);
+			effect.add<ParamEasing<EaseOutBack>>(&scale, 2.0, 1.3);
 		}
 
 		// プレイヤーを描く | Draw the player
