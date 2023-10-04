@@ -116,7 +116,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CoordinateVisualizer.cpp" />
+    <ClCompile Include="ItemContainer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ItemButton.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -317,6 +319,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoordinateVisualizer.h" />
+    <ClInclude Include="ItemButton.h" />
+    <ClInclude Include="ItemContainer.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
