@@ -7,8 +7,9 @@ namespace ExUiBasic
 	class CoroActor : public ActorBase
 	{
 	public:
+		explicit CoroActor();
 		explicit CoroActor(const CoroTaskFunc& task);
-		[[nodiscard]] CoroTaskCall& GetTask() const { return *m_task; };
+		// [[nodiscard]] CoroTaskCall& GetTask() const { return *m_task; };
 		void Update() override;
 
 	private:

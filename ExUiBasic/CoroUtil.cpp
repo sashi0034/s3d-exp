@@ -29,7 +29,7 @@ namespace ExUiBasic
 		}
 	}
 
-	CoroTask YieldExtended::WaitForCoro(const CoroActor& coro)
+	CoroTask YieldExtended::WaitForDead(const ActorBase& coro)
 	{
 		WaitForTrue([coro]() { return coro.IsDead(); });
 	}

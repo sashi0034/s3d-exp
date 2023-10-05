@@ -6,6 +6,7 @@
 #include "CoroTask.h"
 #include "CoroUtil.h"
 #include "ItemButton.h"
+#include "ParamEasing.h"
 
 namespace ExUiBasic
 {
@@ -14,30 +15,29 @@ namespace ExUiBasic
 		std::array<ItemButton, 9> items;
 		Font font20{20};
 		Texture icon1{Emoji(U"🍎")};
-		Mat3x2 transform{Mat3x2::Identity()};
+		Vec2 offset{};
+		double scale = 1.0;
+		CoroActor animation{};
 	};
 
-	void startAnim(YieldExtended yield, ImplState& state)
+	void startAnim(YieldExtended yield, ActorBase& self, ImplState& state)
 	{
-		for (int y = 0; y < 100; ++y)
+		StartCoro(self, [&](YieldExtended yield1)
 		{
-			state.transform = state.transform.translated({0, -1});
-			yield();
-		}
+			yield1.WaitForDead(self.AsParent().Birth(ParamEasing<EaseInOutBack, double>(&state.scale, 2.0, 0.3)));
+			yield1.WaitForDead(self.AsParent().Birth(ParamEasing<EaseInOutBack, double>(&state.scale, 1.0, 0.3)));
+		});
 
-		yield.WaitForTime(1.0);
-
-		for (int y = 0; y < 100; ++y)
-		{
-			state.transform = state.transform.translated({0, 1});
-			yield();
-		}
+		yield.WaitForDead(
+			self.AsParent().Birth(ParamEasing<EaseInOutBack, Vec2>(&state.offset, {0, 80}, 0.6)));
+		yield.WaitForDead(
+			self.AsParent().Birth(ParamEasing<EaseInOutBack, Vec2>(&state.offset, {0, 0}, 0.6)));
 	}
 
 	void update(ActorBase& self, ImplState& state)
 	{
-		const Transformer2D transform{state.transform};
 		const auto center = Point{Scene::Center().x, 60};
+		const Transformer2D transform{Mat3x2::Translate(state.offset).scaled(state.scale, center)};
 
 		for (int i = 0; i < state.items.size(); ++i)
 		{
@@ -49,11 +49,11 @@ namespace ExUiBasic
 			});
 		}
 
-		if (MouseL.down())
+		if (MouseL.down() && state.animation.IsDead())
 		{
-			StartCoro(self, [&](CoroTaskYield& yield)
+			state.animation = StartCoro(self, [&](CoroTaskYield& yield)
 			{
-				startAnim(YieldExtended(yield), state);
+				startAnim(yield, self, state);
 			});
 		}
 	}

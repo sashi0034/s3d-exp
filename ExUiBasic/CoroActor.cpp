@@ -3,6 +3,11 @@
 
 namespace ExUiBasic
 {
+	CoroActor::CoroActor()
+	{
+		Kill();
+	}
+
 	CoroActor::CoroActor(const CoroTaskFunc& task) :
 		m_task(std::make_shared<CoroTaskCall>(task))
 	{
@@ -11,6 +16,7 @@ namespace ExUiBasic
 	void CoroActor::Update()
 	{
 		ActorBase::Update();
+		if (m_task == nullptr) return;
 		if ((*m_task)())
 		{
 		}

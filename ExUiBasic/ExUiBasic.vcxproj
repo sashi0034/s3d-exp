@@ -335,6 +335,7 @@
     <ClInclude Include="CoroUtil.h" />
     <ClInclude Include="ItemButton.h" />
     <ClInclude Include="ItemContainer.h" />
+    <ClInclude Include="ParamEasing.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

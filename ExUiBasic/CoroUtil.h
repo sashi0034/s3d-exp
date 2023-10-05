@@ -17,7 +17,7 @@ namespace ExUiBasic
 		void WaitForTime(double seconds);
 		void WaitForTrue(const std::function<bool()>& discriminant);
 		void WaitForFalse(const std::function<bool()>& discriminant);
-		void WaitForCoro(const CoroActor& coro);
+		void WaitForDead(const ActorBase& coro);
 		void operator()() const { yield(); }
 
 	private:
