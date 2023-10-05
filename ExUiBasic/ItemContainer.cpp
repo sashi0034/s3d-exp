@@ -6,7 +6,7 @@
 #include "CoroTask.h"
 #include "CoroUtil.h"
 #include "ItemButton.h"
-#include "ParamEasing.h"
+#include "EasingAnimation.h"
 
 namespace ExUiBasic
 {
@@ -24,14 +24,16 @@ namespace ExUiBasic
 	{
 		StartCoro(self, [&](YieldExtended yield1)
 		{
-			yield1.WaitForDead(self.AsParent().Birth(ParamEasing<EaseInOutBack, double>(&state.scale, 2.0, 0.3)));
-			yield1.WaitForDead(self.AsParent().Birth(ParamEasing<EaseInOutBack, double>(&state.scale, 1.0, 0.3)));
+			yield1.WaitForDead(
+				AnimateEasing<EaseOutBack>(self, &state.scale, 2.0, 0.6));
+			yield1.WaitForDead(
+				AnimateEasing<EaseInBack>(self, &state.scale, 1.0, 0.6));
 		});
 
 		yield.WaitForDead(
-			self.AsParent().Birth(ParamEasing<EaseInOutBack, Vec2>(&state.offset, {0, 80}, 0.6)));
+			AnimateEasing<EaseOutBack>(self, &state.offset, {0, 80}, 0.6));
 		yield.WaitForDead(
-			self.AsParent().Birth(ParamEasing<EaseInOutBack, Vec2>(&state.offset, {0, 0}, 0.6)));
+			AnimateEasing<EaseOutBack>(self, &state.offset, {0, 0}, 0.6));
 	}
 
 	void update(ActorBase& self, ImplState& state)

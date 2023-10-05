@@ -4,10 +4,10 @@
 namespace ExUiBasic
 {
 	template <double easing(double), typename T>
-	class ParamEasing : public ActorBase
+	class EasingAnimation : public ActorBase
 	{
 	public:
-		explicit ParamEasing(T* valuePtr, T endValue, double duration):
+		explicit EasingAnimation(T* valuePtr, T endValue, double duration):
 			m_state(std::make_shared<State>(State{
 				.valuePtr = (valuePtr),
 				.startValue = (*valuePtr),
@@ -38,4 +38,10 @@ namespace ExUiBasic
 
 		std::shared_ptr<State> m_state{};
 	};
+
+	template <double easing(double), typename T>
+	EasingAnimation<easing, T> AnimateEasing(ActorBase& parent, T* valuePtr, T endValue, double duration)
+	{
+		return parent.AsParent().Birth(EasingAnimation<easing, T>(valuePtr, endValue, duration));
+	}
 }
