@@ -75,11 +75,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <BuildStlModules>false</BuildStlModules>
+      <AdditionalIncludeDirectories>%BOOST_INCLUDEDIR%;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DelayLoadDLLs>advapi32.dll;crypt32.dll;dwmapi.dll;gdi32.dll;imm32.dll;ole32.dll;oleaut32.dll;opengl32.dll;shell32.dll;shlwapi.dll;user32.dll;winmm.dll;ws2_32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%BOOST_LIBRARYDIR%;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /I /D /Y "$(OutDir)$(TargetFileName)" "$(ProjectDir)App"</Command>
@@ -102,6 +104,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <BuildStlModules>false</BuildStlModules>
+      <AdditionalIncludeDirectories>%BOOST_INCLUDEDIR%;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -109,13 +112,19 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <DelayLoadDLLs>advapi32.dll;crypt32.dll;dwmapi.dll;gdi32.dll;imm32.dll;ole32.dll;oleaut32.dll;opengl32.dll;shell32.dll;shlwapi.dll;user32.dll;winmm.dll;ws2_32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%BOOST_LIBRARYDIR%;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /I /D /Y "$(OutDir)$(TargetFileName)" "$(ProjectDir)App"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActorBase.cpp" />
+    <ClCompile Include="ActorContainer.cpp" />
     <ClCompile Include="CoordinateVisualizer.cpp" />
+    <ClCompile Include="CoroActor.cpp" />
+    <ClCompile Include="CoroTask.cpp" />
+    <ClCompile Include="CoroUtil.cpp" />
     <ClCompile Include="ItemContainer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ItemButton.cpp" />
@@ -318,7 +327,12 @@
     <Xml Include="App\example\xml\test.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActorBase.h" />
+    <ClInclude Include="ActorContainer.h" />
     <ClInclude Include="CoordinateVisualizer.h" />
+    <ClInclude Include="CoroActor.h" />
+    <ClInclude Include="CoroTask.h" />
+    <ClInclude Include="CoroUtil.h" />
     <ClInclude Include="ItemButton.h" />
     <ClInclude Include="ItemContainer.h" />
     <ClInclude Include="stdafx.h" />

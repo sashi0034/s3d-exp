@@ -1,0 +1,22 @@
+﻿#include "stdafx.h"
+#include "CoroActor.h"
+
+namespace ExUiBasic
+{
+	CoroActor::CoroActor(const CoroTaskFunc& task) :
+		m_task(std::make_shared<CoroTaskCall>(task))
+	{
+	}
+
+	void CoroActor::Update()
+	{
+		ActorBase::Update();
+		if ((*m_task)())
+		{
+		}
+		else
+		{
+			ActorBase::Kill();
+		}
+	}
+}
