@@ -4,19 +4,28 @@ namespace ExUiBasic
 {
 	class ActorContainer;
 
-	class ActorBase
+	struct IActor // : private Uncopyable
+	{
+		virtual ~IActor() = default;
+		virtual void Update() = 0;
+		virtual float OrderPriority() const = 0;
+		virtual bool IsActive() const = 0;
+		virtual bool IsDead() const = 0;
+	};
+
+	class ActorBase : public IActor
 	{
 	public:
 		ActorBase();
-		virtual ~ActorBase() = default;
-		virtual void Update();
-		virtual float OrderPriority() const;
+		~ActorBase() override = default;
+		void Update() override;
+		float OrderPriority() const override;
 
 		void SetActive(bool isActive);
-		bool IsActive() const;
+		bool IsActive() const override;
 
 		void Kill();
-		bool IsDead() const;
+		bool IsDead() const override;
 
 		bool HasChildren() const;
 		[[nodiscard]] ActorContainer& AsParent();

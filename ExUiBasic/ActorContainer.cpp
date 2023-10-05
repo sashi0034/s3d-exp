@@ -7,9 +7,9 @@ namespace ExUiBasic
 	{
 		std::ranges::stable_sort(
 			m_actorList,
-			[](const ActorBase& left, const ActorBase& right)
+			[](const std::unique_ptr<IActor>& left, const std::unique_ptr<IActor>& right)
 			{
-				return left.OrderPriority() < right.OrderPriority();
+				return left->OrderPriority() < right->OrderPriority();
 			});
 	}
 
@@ -18,7 +18,7 @@ namespace ExUiBasic
 		for (int i = m_actorList.size() - 1; i >= 0; --i)
 		{
 			const auto& actor = m_actorList[i];
-			if (actor.IsDead()) m_actorList.erase(m_actorList.begin() + i);
+			if (actor->IsDead()) m_actorList.erase(m_actorList.begin() + i);
 		}
 
 		// 優先度が高いほど後から更新するように並び変える
@@ -28,8 +28,8 @@ namespace ExUiBasic
 		for (int i = 0; i < m_actorList.size(); ++i)
 		{
 			auto&& actor = m_actorList[i];
-			if (actor.IsActive() == false) continue;;
-			actor.Update();
+			if (actor->IsActive() == false) continue;;
+			actor->Update();
 			// if (actor.HasChildren()) actor.AsParent().Update();
 		}
 	}
@@ -39,8 +39,8 @@ namespace ExUiBasic
 		m_actorList.clear();
 	}
 
-	void ActorContainer::Birth(const ActorBase& actor)
+	void ActorContainer::Birth(std::unique_ptr<IActor>&& actor)
 	{
-		m_actorList.push_back(actor);
+		m_actorList.emplace_back(std::move(actor));
 	}
 }

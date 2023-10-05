@@ -11,12 +11,10 @@ void Main()
 	// 背景の色を設定する | Set the background color
 	Scene::SetBackground(ColorF{0.3, 0.3, 0.3});
 
-
-	Scene::Resize(1920, 1080);
-	Window::Resize(1280, 720);
 	Window::SetStyle(WindowStyle::Sizable);
 	Scene::SetResizeMode(ResizeMode::Keep);
-
+	Scene::Resize(1920, 1080);
+	Window::Resize(1280, 720);
 	ItemContainer itemContainer{};
 	CoordinateVisualizer coordinateVisualizer{};
 

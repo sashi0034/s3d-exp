@@ -18,18 +18,18 @@ namespace ExUiBasic
 			for (int x = 0; x < Scene::Size().x; x += gridSpace)
 			{
 				(void)Line(x, 0, x, Scene::Size().y).draw(LineStyle::SquareDot(dotOffset), 1, color);
-				(void)m_(U"{}"_fmt(x)).draw(x, 0, color);
+				(void)m_font(U"{}"_fmt(x)).draw(x, 0, color);
 			}
 			for (int y = 0; y < Scene::Size().y; y += gridSpace)
 			{
 				(void)Line(0, y, Scene::Size().x, y).draw(LineStyle::SquareDot(dotOffset), 1, color);
-				(void)m_(U"{}"_fmt(y)).draw(0, y, color);
+				(void)m_font(U"{}"_fmt(y)).draw(0, y, color);
 			}
 		}
 
 	private:
 		bool m_isShow = true;
-		Font m_{10};
+		Font m_font{10};
 	};
 
 	CoordinateVisualizer::CoordinateVisualizer() :

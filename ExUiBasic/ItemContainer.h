@@ -1,15 +1,16 @@
 ﻿#pragma once
+#include "ActorBase.h"
 
 namespace ExUiBasic
 {
-	class ItemContainer
+	class ItemContainer : public ActorBase
 	{
 	public:
 		ItemContainer();
-		void Update();
+		void Update() override;
 
 	private:
-		class Impl;
+		struct Impl;
 		std::shared_ptr<Impl> p_impl;
 	};
 }
