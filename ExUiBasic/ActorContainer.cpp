@@ -30,17 +30,11 @@ namespace ExUiBasic
 			auto&& actor = m_actorList[i];
 			if (actor->IsActive() == false) continue;;
 			actor->Update();
-			// if (actor.HasChildren()) actor.AsParent().Update();
 		}
 	}
 
 	void ActorContainer::Clear()
 	{
 		m_actorList.clear();
-	}
-
-	void ActorContainer::Birth(std::unique_ptr<IActor>&& actor)
-	{
-		m_actorList.emplace_back(std::move(actor));
 	}
 }

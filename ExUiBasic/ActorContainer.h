@@ -8,13 +8,12 @@ namespace ExUiBasic
 	public:
 		void Update();
 		void Clear();
-		void Birth(std::unique_ptr<IActor>&& actor);
 
 		template <typename T>
-		const T& BirthAs(const T& actor)
+		const T& Birth(const T& actor)
 		{
 			static_assert(std::is_base_of<ActorBase, T>::value);
-			Birth(std::make_unique<T>(actor));
+			m_actorList.emplace_back(std::make_unique<T>(actor));
 			return actor;
 		}
 

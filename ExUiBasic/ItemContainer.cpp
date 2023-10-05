@@ -4,6 +4,7 @@
 #include "ActorContainer.h"
 #include "CoroActor.h"
 #include "CoroTask.h"
+#include "CoroUtil.h"
 #include "ItemButton.h"
 
 namespace ExUiBasic
@@ -16,16 +17,16 @@ namespace ExUiBasic
 		Mat3x2 transform{Mat3x2::Identity()};
 	};
 
-	void startAnim(CoroTaskYield& yield, ImplState& state)
+	void startAnim(YieldExtended yield, ImplState& state)
 	{
-		Print(U"1");
 		for (int y = 0; y < 100; ++y)
 		{
 			state.transform = state.transform.translated({0, -1});
 			yield();
 		}
 
-		Print(U"2");
+		yield.WaitForTime(1.0);
+
 		for (int y = 0; y < 100; ++y)
 		{
 			state.transform = state.transform.translated({0, 1});
@@ -50,10 +51,10 @@ namespace ExUiBasic
 
 		if (MouseL.down())
 		{
-			self.AsParent().BirthAs(CoroActor([&](auto&& yield)
+			StartCoro(self, [&](CoroTaskYield& yield)
 			{
-				startAnim(yield, state);
-			}));
+				startAnim(YieldExtended(yield), state);
+			});
 		}
 	}
 

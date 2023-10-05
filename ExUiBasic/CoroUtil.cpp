@@ -3,7 +3,7 @@
 
 namespace ExUiBasic
 {
-	CoroTask CoroUtil::WaitForTime(CoroTaskYield& yield, double seconds)
+	CoroTask YieldExtended::WaitForTime(double seconds)
 	{
 		double totalTime = 0;
 		while (totalTime < seconds)
@@ -13,7 +13,7 @@ namespace ExUiBasic
 		}
 	}
 
-	CoroTask CoroUtil::WaitForTrue(CoroTaskYield& yield, const std::function<bool()>& discriminant)
+	CoroTask YieldExtended::WaitForTrue(const std::function<bool()>& discriminant)
 	{
 		while (!discriminant())
 		{
@@ -21,7 +21,7 @@ namespace ExUiBasic
 		}
 	}
 
-	CoroTask CoroUtil::WaitForFalse(CoroTaskYield& yield, const std::function<bool()>& discriminant)
+	CoroTask YieldExtended::WaitForFalse(const std::function<bool()>& discriminant)
 	{
 		while (discriminant())
 		{
@@ -29,8 +29,8 @@ namespace ExUiBasic
 		}
 	}
 
-	CoroTask CoroUtil::WaitForCoro(CoroTaskYield& yield, const CoroActor& coro)
+	CoroTask YieldExtended::WaitForCoro(const CoroActor& coro)
 	{
-		WaitForTrue(yield, [coro]() { return coro.IsDead(); });
+		WaitForTrue([coro]() { return coro.IsDead(); });
 	}
 }
