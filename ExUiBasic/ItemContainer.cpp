@@ -7,19 +7,23 @@
 #include "CoroUtil.h"
 #include "ItemButton.h"
 #include "EasingAnimation.h"
+#include "TomlParametersWrapper.h"
 
 namespace ExUiBasic
 {
-	struct ImplState
+	namespace
 	{
-		std::array<ItemButton, 9> items;
-		Font font20{20};
-		Texture icon1{Emoji(U"🍎")};
-		Vec2 offset{};
-		double scale = 1.0;
-		CoroActor animation{};
-		ItemLabel itemLabel{};
-	};
+		struct ImplState
+		{
+			std::array<ItemButton, 9> items;
+			Font font20{20};
+			Texture icon1{Emoji(U"🍎")};
+			Vec2 offset{};
+			double scale = 1.0;
+			CoroActor animation{};
+			ItemLabel itemLabel{};
+		};
+	}
 
 	void startAnim(YieldExtended yield, ActorBase& self, ImplState& state)
 	{
@@ -53,7 +57,7 @@ namespace ExUiBasic
 			});
 		}
 
-		state.itemLabel.SetCenter(center + Point{0, 80});
+		state.itemLabel.SetCenter(center + GetTomlParameter<Point>(U"Ui.ItemContainer.center"));
 		state.itemLabel.Update();
 
 		if (KeyZ.down() && state.animation.IsDead())
