@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "ActorBase.h"
 
 namespace ExUiBasic
 {
@@ -10,12 +11,12 @@ namespace ExUiBasic
 		Texture icon;
 	};
 
-	class ItemButton
+	class ItemButton : public ActorBase
 	{
 	public:
 		ItemButton();
 
-		void Update(const ItemButtonParam& param);
+		void Tick(const ItemButtonParam& param);
 
 	private:
 		class Impl;

@@ -43,7 +43,7 @@ namespace ExUiBasic
 
 		for (int i = 0; i < state.items.size(); ++i)
 		{
-			state.items[i].Update({
+			state.items[i].Tick({
 				.index = (i + 1),
 				.font = state.font20,
 				.center = center.movedBy({(i - state.items.size() / 2) * 80, 0}),
@@ -51,7 +51,7 @@ namespace ExUiBasic
 			});
 		}
 
-		if (MouseL.down() && state.animation.IsDead())
+		if (KeyZ.down() && state.animation.IsDead())
 		{
 			state.animation = StartCoro(self, [&](CoroTaskYield& yield)
 			{

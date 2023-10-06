@@ -21,9 +21,13 @@ namespace ExUiBasic
 		void Update() override
 		{
 			m_state->time += Scene::DeltaTime();
+			if (m_state->time >= m_state->duration)
+			{
+				m_state->time = m_state->duration;
+				Kill();
+			}
 			const double e = easing(m_state->time / m_state->duration);
 			*(m_state->valuePtr) = m_state->startValue * (1 - e) + m_state->endValue * e;
-			if (m_state->time >= m_state->duration) Kill();
 		}
 
 	private:
@@ -43,5 +47,10 @@ namespace ExUiBasic
 	EasingAnimation<easing, T> AnimateEasing(ActorBase& parent, T* valuePtr, T endValue, double duration)
 	{
 		return parent.AsParent().Birth(EasingAnimation<easing, T>(valuePtr, endValue, duration));
+	}
+
+	constexpr double BoomerangParabola(double value)
+	{
+		return 1 - 4 * (value - 0.5) * (value - 0.5);
 	}
 }
