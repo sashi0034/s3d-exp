@@ -4,7 +4,7 @@ namespace ExUiBasic
 {
 	class ActorContainer;
 
-	struct IActor // : private Uncopyable
+	struct IActor
 	{
 		virtual ~IActor() = default;
 		virtual void Update() = 0;

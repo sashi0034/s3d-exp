@@ -18,6 +18,7 @@ namespace ExUiBasic
 		Vec2 offset{};
 		double scale = 1.0;
 		CoroActor animation{};
+		ItemLabel itemLabel{};
 	};
 
 	void startAnim(YieldExtended yield, ActorBase& self, ImplState& state)
@@ -44,12 +45,16 @@ namespace ExUiBasic
 		for (int i = 0; i < state.items.size(); ++i)
 		{
 			state.items[i].Tick({
+				.label = &state.itemLabel,
 				.index = (i + 1),
 				.font = state.font20,
 				.center = center.movedBy({(i - state.items.size() / 2) * 80, 0}),
 				.icon = state.icon1
 			});
 		}
+
+		state.itemLabel.SetCenter(center + Point{0, 80});
+		state.itemLabel.Update();
 
 		if (KeyZ.down() && state.animation.IsDead())
 		{

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ActorBase.h"
+#include "ActorContainer.h"
 
 namespace ExUiBasic
 {
