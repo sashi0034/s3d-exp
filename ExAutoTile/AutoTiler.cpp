@@ -3,13 +3,16 @@
 
 namespace ExAutoTile
 {
-	enum TileAngle
+	namespace
 	{
-		AngL = 1 << 0,
-		AngT = 1 << 1,
-		AngR = 1 << 2,
-		AngB = 1 << 3,
-	};
+		enum TileAngle
+		{
+			AngL = 1 << 0,
+			AngT = 1 << 1,
+			AngR = 1 << 2,
+			AngB = 1 << 3,
+		};
+	}
 
 	constexpr Point diagonalStart{0, 4};
 

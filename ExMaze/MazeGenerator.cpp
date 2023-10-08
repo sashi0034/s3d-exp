@@ -5,11 +5,14 @@ namespace ExMaze
 {
 	class MazeGenInternal;
 
-	struct MazeGenState
+	namespace
 	{
-		Grid<bool> dugFlag;
-		Grid<bool> roomEntryFlag;
-	};
+		struct MazeGenState
+		{
+			Grid<bool> dugFlag;
+			Grid<bool> roomEntryFlag;
+		};
+	}
 
 	Point IndexToDirection(int index)
 	{

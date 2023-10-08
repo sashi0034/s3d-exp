@@ -3,34 +3,37 @@
 
 namespace ExRogue
 {
-	class SeparatedArea : public Rect
+	namespace
 	{
-		using Rect::Rect;
+		class SeparatedArea : public Rect
+		{
+			using Rect::Rect;
 
-		bool HasLeftArea() const { return this->x > 0; }
-		bool HasTopArea() const { return this->y > 0; }
+			bool HasLeftArea() const { return this->x > 0; }
+			bool HasTopArea() const { return this->y > 0; }
 
-		bool HasRightArea(const Size& dangSize) const { return this->rightX() - 1 < dangSize.x - 1; }
-		bool HasDownArea(const Size& dangSize) const { return this->bottomY() - 1 < dangSize.y - 1; }
-	};
+			bool HasRightArea(const Size& dangSize) const { return this->rightX() - 1 < dangSize.x - 1; }
+			bool HasDownArea(const Size& dangSize) const { return this->bottomY() - 1 < dangSize.y - 1; }
+		};
 
-	class RoomPathway : public s3d::Rect
-	{
-	public:
-		using Rect::Rect;
-		static RoomPathway FromHorizontal(const Point& start, int w) { return RoomPathway{start, {w, 1}}; };
-		static RoomPathway FromVertical(const Point& start, int h) { return RoomPathway{start, {1, h}}; };
+		class RoomPathway : public s3d::Rect
+		{
+		public:
+			using Rect::Rect;
+			static RoomPathway FromHorizontal(const Point& start, int w) { return RoomPathway{start, {w, 1}}; };
+			static RoomPathway FromVertical(const Point& start, int h) { return RoomPathway{start, {1, h}}; };
 
-		bool IsValid() const { return this->size != Size{0, 0}; }
-		bool IsHorizontal() const { return this->size.y == 1; }
-		bool IsVertical() const { return this->size.x == 1; }
-	};
+			bool IsValid() const { return this->size != Size{0, 0}; }
+			bool IsHorizontal() const { return this->size.y == 1; }
+			bool IsVertical() const { return this->size.x == 1; }
+		};
 
-	struct AreaRoom
-	{
-		SeparatedArea area;
-		Rect room;
-	};
+		struct AreaRoom
+		{
+			SeparatedArea area;
+			Rect room;
+		};
+	}
 
 	class DungGenInternal;
 }
