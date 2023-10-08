@@ -1,9 +1,11 @@
 ﻿# include "stdafx.h" // OpenSiv3D v0.6.10
 
+#include "ActorContainer.h"
 #include "CoordinateVisualizer.h"
 #include "ItemButton.h"
 #include "ItemContainer.h"
 #include "TomlParametersWrapper.h"
+#include "TutorialNavigation.h"
 
 using namespace ExUiBasic;
 
@@ -19,13 +21,15 @@ void Main()
 
 	TomlParametersWrapper tomlParametersWrapper{};
 
-	ItemContainer itemContainer{};
+	ActorContainer actors{};
+	actors.Birth(ItemContainer());
+	actors.Birth(TutorialNavigation());
 	CoordinateVisualizer coordinateVisualizer{};
 
 	while (System::Update())
 	{
 		tomlParametersWrapper.Update();
 		coordinateVisualizer.Update({.gridSpace = 40});
-		itemContainer.Update();
+		actors.Update();
 	}
 }

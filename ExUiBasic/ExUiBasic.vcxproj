@@ -133,6 +133,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TomlParametersWrapper.cpp" />
+    <ClCompile Include="TutorialNavigation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\engine\texture\box-shadow\128.png" />
@@ -339,6 +340,7 @@
     <ClInclude Include="EasingAnimation.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TomlParametersWrapper.h" />
+    <ClInclude Include="TutorialNavigation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App\example\obj\blacksmith.obj">

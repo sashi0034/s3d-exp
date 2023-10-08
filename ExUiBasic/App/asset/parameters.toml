@@ -1,2 +1,10 @@
 [Ui.ItemContainer]
 center = "(0, 80)"
+
+[Ui.TutorialNavigation]
+arrowScale = 2.0
+arrowSpace = 20
+arrowSpring = 40
+arrowInterval = 0.5
+messageBackSize = "(800, 80)"
+messageTop = 200
