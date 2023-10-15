@@ -1,50 +1,46 @@
 ﻿# include "stdafx.h" // OpenSiv3D v0.6.10
 
-template <double easing(double)>
-class ParamEasing : public IEffect
-{
-public:
-	explicit ParamEasing(double* valuePtr, double endValue, double duration):
-		m_valuePtr(valuePtr),
-		m_startValue(*valuePtr),
-		m_endValue(endValue),
-		m_duration(duration)
-	{
-	}
+#include "Firework.h"
+#include "ParticleEffect.h"
+#include "StartEffect.h"
+#include "TouchEffect.h"
+#include "VerticalFlare.h"
 
-	bool update(double timeSec) override
-	{
-		const double e = easing(timeSec / m_duration);
-		*m_valuePtr = m_startValue * (1 - e) + m_endValue * e;
-		return timeSec < m_duration;
-	}
-
-private:
-	double* m_valuePtr;
-	double m_startValue;
-	double m_endValue;
-	double m_duration;
-};
+using namespace ExEffect;
 
 void Main()
 {
-	Scene::SetBackground(ColorF{0.7, 0.7, 0.7});
-	const Effect effect{};
+	Scene::SetBackground(ColorF{0.3, 0.3, 0.3});
 
-	const Texture emoji{U"📺"_emoji};
-	double scale = 1.0f;
+	Window::SetStyle(WindowStyle::Sizable);
+	Scene::SetResizeMode(ResizeMode::Keep);
+	Scene::Resize(1920, 1080);
+	Window::Resize(1280, 720);
+
+	const Effect effect{};
+	const Effect additiveEffect{};
+
+	const Texture particle{U"example/particle.png", TextureDesc::Mipped};
+
+	Print(U"Effect test");
 
 	while (System::Update())
 	{
 		effect.update();
 
-		if (MouseL.down())
 		{
-			scale = 1.0;
-			effect.add<ParamEasing<EaseOutBack>>(&scale, 2.0, 1.3);
+			const ScopedRenderStates2D blend{BlendState::Additive};
+			additiveEffect.update();
 		}
 
-		// プレイヤーを描く | Draw the player
-		emoji.scaled(scale).drawAt(Scene::Center());
+		if (Key1.down()) effect.add<Spark>(Cursor::Pos());
+
+		if (Key2.down()) effect.add<StarEffect>(Cursor::Pos(), Random(0.0, 360.0));
+
+		if (Key3.down()) additiveEffect.add<TouchEffect>(Cursor::PosF());
+
+		if (Key4.down()) additiveEffect.add<FirstFirework>(additiveEffect, Cursor::Pos(), Vec2{0, -400});
+
+		if (Key5.down()) additiveEffect.add<VerticalFlare>(Cursor::PosF(), particle);
 	}
 }
