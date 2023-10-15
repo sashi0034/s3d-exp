@@ -117,6 +117,7 @@
   <ItemGroup>
     <ClCompile Include="Firework.cpp" />
     <ClCompile Include="ItemObtainEffect.cpp" />
+    <ClCompile Include="ItemObtainEffect2.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ParticleEffect.cpp" />
     <ClCompile Include="StartEffect.cpp" />
@@ -323,6 +324,7 @@
   <ItemGroup>
     <ClInclude Include="Firework.h" />
     <ClInclude Include="ItemObtainEffect.h" />
+    <ClInclude Include="ItemObtainEffect2.h" />
     <ClInclude Include="ParticleEffect.h" />
     <ClInclude Include="StartEffect.h" />
     <ClInclude Include="stdafx.h" />

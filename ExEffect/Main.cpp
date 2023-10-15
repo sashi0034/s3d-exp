@@ -2,6 +2,7 @@
 
 #include "Firework.h"
 #include "ItemObtainEffect.h"
+#include "ItemObtainEffect2.h"
 #include "ParticleEffect.h"
 #include "StartEffect.h"
 #include "TouchEffect.h"
@@ -45,5 +46,7 @@ void Main()
 		if (Key5.down()) additiveEffect.add<VerticalFlare>(Cursor::PosF(), particle);
 
 		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(particle, Cursor::Pos());
+
+		if (Key7.down()) additiveEffect.add<ItemObtainEffect2>(Cursor::Pos());
 	}
 }

@@ -59,7 +59,9 @@ namespace ExEffect
 				particle.scale = r * scaleMultiplier;
 
 				(void)m_texture.scaled(particle.scale)
-				               .drawAt(m_center + particle.pos.toVec2(), ColorF{1.0, 1.0, 0.3, 0.3});
+				               .drawAt(
+					               m_center + particle.pos.toVec2(),
+					               ColorF{1.0, 1.0, 0.3 * (1 + particle.scale), 0.3});
 			}
 			return not hasCompleted;
 		}
