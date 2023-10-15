@@ -16,10 +16,12 @@ namespace ExEffect
 		Texture m_texture{};
 		Array<Particle> m_particles{};
 		Vec2 m_center{};
-		static constexpr int particleSize = 30;
-		static constexpr double lifespan = 1.5;
-		static constexpr double rotSpeed = 2.0;
-		static constexpr double maxRadius = 40;
+		static constexpr int particleSize = 12;
+		static constexpr double lifespan = 0.3;
+		static constexpr double delayDuration = 0.1;
+		static constexpr double rotationSpeed = 20.0;
+		static constexpr double maxRadius = 120;
+		static constexpr double scaleMultiplier = 2;
 
 		explicit ItemObtainEffect(const Texture& texture, const Vec2& center) :
 			m_texture(texture),
@@ -29,8 +31,8 @@ namespace ExEffect
 			for (int i = 0; i < m_particles.size(); ++i)
 			{
 				auto&& particle = m_particles[i];
-				particle.pos.theta = i * (360 / particleSize);
-				particle.delay = 0.001 * particle.pos.theta;
+				particle.pos.theta = Math::ToRadians(i * (360 / particleSize));
+				particle.delay = (i % 2) * delayDuration;
 			}
 		}
 
@@ -50,14 +52,14 @@ namespace ExEffect
 				}
 
 				particle.t += Scene::DeltaTime();
-				particle.angVel += Scene::DeltaTime();
-				particle.pos.theta += particle.angVel;
-				const double r = Math::Sin((particle.t / lifespan) * Math::Pi)
-					* (0.75 + 0.25 * Math::Sin((16.0 / 7) * (particle.t / lifespan) * Math::Pi));
+				particle.angVel += rotationSpeed * Scene::DeltaTime();
+				particle.pos.theta += Math::ToRadians(particle.angVel * particle.angVel);
+				const double r = Math::Sin((particle.t / lifespan) * Math::Pi);
 				particle.pos.r = maxRadius * r;
-				particle.scale = r;
+				particle.scale = r * scaleMultiplier;
 
-				(void)m_texture.scaled(particle.scale).drawAt(m_center + particle.pos.toVec2(), ColorF{1.0, 0.3});
+				(void)m_texture.scaled(particle.scale)
+				               .drawAt(m_center + particle.pos.toVec2(), ColorF{1.0, 1.0, 0.3, 0.3});
 			}
 			return not hasCompleted;
 		}
