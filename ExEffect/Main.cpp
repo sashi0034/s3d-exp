@@ -1,6 +1,7 @@
 ﻿# include "stdafx.h" // OpenSiv3D v0.6.10
 
 #include "Firework.h"
+#include "ItemObtainEffect.h"
 #include "ParticleEffect.h"
 #include "StartEffect.h"
 #include "TouchEffect.h"
@@ -42,5 +43,7 @@ void Main()
 		if (Key4.down()) additiveEffect.add<FirstFirework>(additiveEffect, Cursor::Pos(), Vec2{0, -400});
 
 		if (Key5.down()) additiveEffect.add<VerticalFlare>(Cursor::PosF(), particle);
+
+		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(particle, Cursor::Pos());
 	}
 }
