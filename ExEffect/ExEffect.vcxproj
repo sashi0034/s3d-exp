@@ -116,6 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Firework.cpp" />
+    <ClCompile Include="FragmentTextureEffect.cpp" />
     <ClCompile Include="ItemObtainEffect.cpp" />
     <ClCompile Include="ItemObtainEffect2.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -323,6 +324,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Firework.h" />
+    <ClInclude Include="FragmentTextureEffect.h" />
     <ClInclude Include="ItemObtainEffect.h" />
     <ClInclude Include="ItemObtainEffect2.h" />
     <ClInclude Include="ParticleEffect.h" />

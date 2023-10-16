@@ -70,7 +70,7 @@ namespace ExEffect
 		{
 			if (InRange(timeSec, startSec, endSec) == false) return;
 
-			const double rate = (timeSec - startSec) / endSec;
+			const double rate = (timeSec - startSec) / (endSec - startSec);
 			const double alpha = 1.0 - EaseInQuart(rate);
 
 			const Vec2 offset = Circular(160 * rate, direction);

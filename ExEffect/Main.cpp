@@ -1,6 +1,7 @@
 ﻿# include "stdafx.h" // OpenSiv3D v0.6.10
 
 #include "Firework.h"
+#include "FragmentTextureEffect.h"
 #include "ItemObtainEffect.h"
 #include "ItemObtainEffect2.h"
 #include "ParticleEffect.h"
@@ -23,6 +24,7 @@ void Main()
 	const Effect additiveEffect{};
 
 	TextureAsset::Register(U"example/particle.png", U"example/particle.png", TextureDesc::Mipped);
+	TextureAsset::Register(U"example/texture/uv.png", U"example/texture/uv.png");
 
 	Print(U"Effect test");
 
@@ -48,5 +50,11 @@ void Main()
 		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(TextureAsset(U"example/particle.png"), Cursor::Pos());
 
 		if (Key7.down()) additiveEffect.add(MakeItemObtainEffect2(Cursor::Pos()));
+
+		if (Key8.down())
+			effect.add(MakeFragmentTextureEffect(
+				Cursor::Pos(),
+				TextureAsset(U"example/texture/uv.png"),
+				{120, 120, 480, 480}));
 	}
 }
