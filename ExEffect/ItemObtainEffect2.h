@@ -24,7 +24,7 @@ namespace ExEffect
 		{
 			if (InRange(timeSec, startSec, endSec))
 			{
-				const double alpha = timeSec < endSec - 0.1 ? 1.0 : 1.0 + (endSec - 0.1 - timeSec) / 0.1;
+				const double alpha = 1.0 - EaseInQuart((timeSec - startSec) / (endSec - startSec));
 				Circle(m_center, r * (timeSec - startSec) / endSec)
 					.drawFrame(10,
 					           ColorF{1.0f, 0.0f}, ColorF{1.0f, 0.3f * alpha});
@@ -38,7 +38,7 @@ namespace ExEffect
 			for (const auto i : step(number))
 			{
 				const double rate = (timeSec - startSec) / endSec;
-				const double alpha = timeSec < endSec - 0.1 ? 1.0 : 1.0 + (endSec - 0.1 - timeSec) / 0.1;
+				const double alpha = 1.0 - EaseInQuart((timeSec - startSec) / (endSec - startSec));
 				Circle(m_center, r * std::min(2 * rate, 1.0))
 					.drawPie(
 						Math::ToRadians((i + offset) * (360.0 / number)),
