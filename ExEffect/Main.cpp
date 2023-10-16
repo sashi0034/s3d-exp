@@ -22,7 +22,7 @@ void Main()
 	const Effect effect{};
 	const Effect additiveEffect{};
 
-	const Texture particle{U"example/particle.png", TextureDesc::Mipped};
+	TextureAsset::Register(U"example/particle.png", U"example/particle.png", TextureDesc::Mipped);
 
 	Print(U"Effect test");
 
@@ -43,9 +43,9 @@ void Main()
 
 		if (Key4.down()) additiveEffect.add<FirstFirework>(additiveEffect, Cursor::Pos(), Vec2{0, -400});
 
-		if (Key5.down()) additiveEffect.add<VerticalFlare>(Cursor::PosF(), particle);
+		if (Key5.down()) additiveEffect.add<VerticalFlare>(Cursor::PosF(), TextureAsset(U"example/particle.png"));
 
-		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(particle, Cursor::Pos());
+		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(TextureAsset(U"example/particle.png"), Cursor::Pos());
 
 		if (Key7.down()) additiveEffect.add<ItemObtainEffect2>(Cursor::Pos());
 	}
