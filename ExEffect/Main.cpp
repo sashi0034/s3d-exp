@@ -47,6 +47,6 @@ void Main()
 
 		if (Key6.down()) additiveEffect.add<ItemObtainEffect>(TextureAsset(U"example/particle.png"), Cursor::Pos());
 
-		if (Key7.down()) additiveEffect.add<ItemObtainEffect2>(Cursor::Pos());
+		if (Key7.down()) additiveEffect.add(MakeItemObtainEffect2(Cursor::Pos()));
 	}
 }
