@@ -127,6 +127,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TouchEffect.cpp" />
+    <ClCompile Include="TwinkleEffect.cpp" />
     <ClCompile Include="VerticalFlare.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -331,6 +332,7 @@
     <ClInclude Include="StartEffect.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TouchEffect.h" />
+    <ClInclude Include="TwinkleEffect.h" />
     <ClInclude Include="VerticalFlare.h" />
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,7 @@
 #include "ParticleEffect.h"
 #include "StartEffect.h"
 #include "TouchEffect.h"
+#include "TwinkleEffect.h"
 #include "VerticalFlare.h"
 
 using namespace ExEffect;
@@ -56,5 +57,8 @@ void Main()
 				Cursor::Pos(),
 				TextureAsset(U"example/texture/uv.png"),
 				{120, 120, 480, 480}));
+
+		if (KeyQ.down())
+			effect.add(MakeTwinkleEffect(effect, Cursor::Pos()));
 	}
 }
