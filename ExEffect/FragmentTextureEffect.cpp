@@ -44,7 +44,7 @@ namespace ExEffect
 
 			const auto offset1 = clip + dir * 120 * rate;
 			const auto offset2 = (1 - 4 * (0.5 - rate) * (0.5 - rate)) * Vec2{0, -m_region.size.y};
-			const auto scale = rate < 0.5 ? 1 : 1 - EaseInBounce(2 * (rate - 0.5));
+			const auto scale = rate < 0.5 ? 1 : 1 - EaseInBack(2 * (rate - 0.5));
 			const auto drawn = m_texture(Rect{m_region.pos + clip, m_region.size / 2})
 			                   .scaled(1, scale)
 			                   .drawAt(m_center - m_region.size / 4 + offset1 + offset2);

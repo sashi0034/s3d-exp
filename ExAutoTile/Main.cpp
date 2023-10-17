@@ -74,6 +74,8 @@ void Main()
 	Scene::SetBackground(ColorF{0.3, 0.3, 0.3});
 
 	const Texture texture{U"asset/brick_stylish_24x24.png"};
+	auto emoji = Texture{U"🧵"_emoji};
+	Vec2 emojiPos{};
 
 	const Array<std::string> tileMap{
 		" 11                             ",
@@ -92,14 +94,23 @@ void Main()
 	{
 		camera.update();
 		const auto t = camera.createTransformer();
-		SamplerState sample{SamplerState::BorderNearest};
-		for (int y = 0; y < tileMap.size(); ++y)
+		const ScopedRenderStates2D sampler{SamplerState::BorderNearest};
+
+		const auto inversed = Graphics2D::GetCameraTransform().inverse();
+		auto mapTl = inversed.transformPoint(Vec2{0, 0}).asPoint() / 24;
+		auto mapBr = inversed.transformPoint(Scene::Size()).asPoint() / 24;
+		for (int y = std::max(0, mapTl.y); y < std::min(mapBr.y + 1, static_cast<int>(tileMap.size())); ++y)
 		{
-			for (int x = 0; x < tileMap[y].size(); ++x)
+			for (int x = std::max(0, mapTl.x); x < std::min(mapBr.x + 1, static_cast<int>(tileMap[y].size())); ++x)
 			{
 				drawTileAt(tileMap, y, x, texture);
 			}
 		}
+
+		emojiPos.moveBy({Scene::DeltaTime(), 0});
+
+		if (emojiPos.x > 200) emojiPos.x = 0;
+		(void)emoji.resized({32, 32}).draw(emojiPos);
 	}
 }
 
