@@ -34,9 +34,11 @@ namespace ExEffect
 			if (InRange(timeSec, startSec, endSec) == false) return;
 			const double rate = (timeSec - startSec) / (endSec - startSec);
 
-			const auto offset = clip + dir * 120 * rate;
+			const auto offset1 = clip + dir * 120 * rate;
+			const auto offset2 = (1 - 4 * (0.5 - rate) * (0.5 - rate)) * Vec2{0, -m_region.size.y};
 			m_texture(Rect{m_region.pos + clip, m_region.size / 2})
-				.drawAt(m_center - m_region.size / 4 + offset);
+				.scaled(1, rate < 0.5 ? 1 : 1 - EaseInBounce(2 * (rate - 0.5)))
+				.draw(m_center - m_region.size / 2 + offset1 + offset2);
 		}
 	};
 
