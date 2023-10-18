@@ -2,6 +2,7 @@
 
 #include "Firework.h"
 #include "FragmentTextureEffect.h"
+#include "ImpactEffect.h"
 #include "ItemObtainEffect.h"
 #include "ItemObtainEffect2.h"
 #include "ParticleEffect.h"
@@ -60,5 +61,8 @@ void Main()
 
 		if (KeyQ.down())
 			effect.add(MakeTwinkleEffect(effect, Cursor::Pos()));
+
+		if (KeyW.down())
+			effect.add(MakeImpactEffect(Cursor::Pos()));
 	}
 }
