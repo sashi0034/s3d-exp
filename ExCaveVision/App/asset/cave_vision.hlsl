@@ -43,12 +43,13 @@ float2 calcUvTex1(s3d::PSInput input)
 {
     const float2 vecOne = {1.0f, 1.0f};
     const float uvStep = 96.0;
+    const float2 xy = input.position.xy;
 
     const float scrollSpeed = 2.0;
-    float2 uv = ((input.position.xy % uvStep) / uvStep) + ((scrollSpeed * g_animRate) % 1.0) * vecOne;
+    float2 uv = ((xy % uvStep) / uvStep) + ((scrollSpeed * g_animRate) % 1.0) * vecOne;
 
     const float waveStep = 2.0;
-    const float waveY = sin(input.position.y / 180.0 * PI * waveStep);
+    const float waveY = sin(xy.y / 180.0 * PI * waveStep);
     const float waveSpeed = 1.5;
     const float waveMax = 0.5;
     const float waveAmount = waveMax * sin(g_animRate * PI * waveSpeed);
@@ -62,13 +63,14 @@ float2 calcUvTex2(s3d::PSInput input)
 {
     const float2 vecOne = {1.0f, 1.0f};
     const float uvStep = 96.0 * 2;
+    const float2 xy = input.position.xy;
 
-    float2 uv = ((input.position.xy % uvStep) / uvStep);
+    float2 uv = ((xy % uvStep) / uvStep);
 
     const float oscillationSpeed = 2.7;
     const float oscillationAmount = 0.3;
     uv.x = uv.x + oscillationAmount * sin(
-        ((input.position.x + input.position.y) / uvStep + g_animRate * oscillationSpeed) * PI);
+        ((xy.x + xy.y) / uvStep + g_animRate * oscillationSpeed) * PI);
 
     uv = (uv + vecOne) % 1.0;
     return uv;

@@ -22,11 +22,17 @@ void Main()
 	ConstantBuffer<CaveVisionCb> caveVisionCb{};
 	ConstantBuffer<SoftShapeCb> softShapeCb{};
 	RenderTexture maskTexture{Scene::Size(), ColorF{1.0}};
+	Camera2D camera{};
 
 	while (System::Update())
 	{
+		camera.update();
+
 		// マスク描画
 		{
+			const auto t1 = camera.createTransformer();
+			Transformer2D t2{Mat3x2::Scale({static_cast<double>(Scene::Size().x) / Scene::Size().y, 1.0})};
+
 			ScopedRenderTarget2D target{maskTexture};
 			softShapeCb->time += Scene::DeltaTime() * 2;
 			softShapeCb->centerPos = Scene::Center();
