@@ -49,10 +49,10 @@ cbuffer PSConstants2D : register(b0)
     float4 g_internal;
 }
 
-float2 toUV(int quadId, uint mod6)
+float2 toUV(float2 xyId, uint mod6)
 {
     const float step = 1.0 / g_divideCount;
-    const float2 offset = float2(step, step) * float2(quadId % g_divideCount, quadId / g_divideCount);
+    const float2 offset = float2(step, step) * xyId;
 
     if (mod6 == 0)
     {
@@ -80,13 +80,6 @@ float2 toUV(int quadId, uint mod6)
     }
 }
 
-float2 toQuad(float2 uv, float2 size)
-{
-    float2 halfSize = size / 2.0;
-    float2 ret = lerp(-halfSize, halfSize, uv);
-    return ret;
-}
-
 // 頂点シェーダー
 s3d::PSInput VS(uint id: SV_VERTEXID)
 {
@@ -101,13 +94,11 @@ s3d::PSInput VS(uint id: SV_VERTEXID)
     const int xId = (int)(quadId % g_divideCount);
     const int yId = (int)(quadId / g_divideCount);
 
-    float2 size = float2(40, 40);
-    pos += float2(xId * size.x, yId * size.y);
-
     // uv座標を計算
-    const float2 uv = toUV(quadId, mod6);
+    const float2 uv = toUV(float2(xId, yId), mod6);
 
-    pos += toQuad(uv, size);
+    const float2 size = float2(100, 100);
+    pos += uv * size;
 
     result.position = s3d::Transform2D(pos, g_transform);
     result.uv = uv;
