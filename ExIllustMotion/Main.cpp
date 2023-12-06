@@ -102,9 +102,12 @@ void Main()
 		ly.NextLY();
 		ly.NextLY();
 
-		for (auto&& offsetPoint : step(Size(10, 5)))
+		for (auto&& offsetPoint : step(Size(1, 1)))
 		{
-			Transformer2D transformer2D{Mat3x2::Translate((offsetPoint * drawSize).movedBy(0, ly.CurrentLY()))};
+			Transformer2D transformer2D{
+				Mat3x2::Translate((offsetPoint * drawSize).movedBy(0, ly.CurrentLY()))
+				.scaled(3.0, Vec2{0, ly.CurrentLY()})
+			};
 
 			// おさかな描画
 			{
