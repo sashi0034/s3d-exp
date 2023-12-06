@@ -49,35 +49,18 @@ cbuffer PSConstants2D : register(b0)
     float4 g_internal;
 }
 
-float2 toUV(float2 xyId, uint mod6)
+uint2 offsetMod6(uint mod6)
 {
-    const float step = 1.0 / g_divideCount;
-    const float2 offset = float2(step, step) * xyId;
+    const float2 offsets[6] = {
+        float2(0, 0),
+        float2(1, 0),
+        float2(0, 1),
+        float2(0, 1),
+        float2(1, 0),
+        float2(1, 1)
+    };
 
-    if (mod6 == 0)
-    {
-        return offset + float2(0, 0);
-    }
-    else if (mod6 == 1)
-    {
-        return offset + float2(step, 0);
-    }
-    else if (mod6 == 2)
-    {
-        return offset + float2(0, step);
-    }
-    else if (mod6 == 3)
-    {
-        return offset + float2(0, step);
-    }
-    else if (mod6 == 4)
-    {
-        return offset + float2(step, 0);
-    }
-    else
-    {
-        return offset + float2(step, step);
-    }
+    return offsets[mod6];
 }
 
 // 頂点シェーダー
@@ -91,11 +74,13 @@ s3d::PSInput VS(uint id: SV_VERTEXID)
 
     // 座標を適当に計算
     float2 pos = float2(0, 0);
-    const int xId = (int)(quadId % g_divideCount);
-    const int yId = (int)(quadId / g_divideCount);
+    const uint xId0 = (int)(quadId % g_divideCount);
+    const uint yId0 = (int)(quadId / g_divideCount);
 
     // uv座標を計算
-    const float2 uv = toUV(float2(xId, yId), mod6);
+    const uint2 xyId1 = uint2(xId0, yId0) + offsetMod6(mod6);
+    const float step = 1.0 / g_divideCount;
+    const uint2 uv = step * xyId1;
 
     const float2 size = float2(100, 100);
     pos += uv * size;
