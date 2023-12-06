@@ -25,11 +25,11 @@ namespace
 				(void)Triangle(offsets[getMeshGridIndex(divideCount, x, y)].xy(),
 				               offsets[getMeshGridIndex(divideCount, x + 1, y)].xy(),
 				               offsets[getMeshGridIndex(divideCount, x, y + 1)].xy())
-					.drawFrame(1.0, ColorF(1.0, 0.5));
+					.drawFrame(0.5, ColorF(1.0, 0.5));
 				(void)Triangle(offsets[getMeshGridIndex(divideCount, x + 1, y + 1)].xy(),
 				               offsets[getMeshGridIndex(divideCount, x + 1, y)].xy(),
 				               offsets[getMeshGridIndex(divideCount, x, y + 1)].xy())
-					.drawFrame(1.0, ColorF(1.0, 0.5));
+					.drawFrame(0.5, ColorF(1.0, 0.5));
 			}
 		}
 	}
@@ -63,6 +63,8 @@ namespace
 		int m_y{-1};
 	};
 
+	double g_angAttenuate = 0.99;
+
 	void fixedUpdateMeshes(
 		size_t divideCount,
 		const Vec2& drawSize,
@@ -73,11 +75,9 @@ namespace
 		constexpr double angleSpeed = 0.2;
 		meshRigidBody.angVel +=
 			angleSpeed * (Math::Sin(ToRadians(meshRigidBody.angle)) * -1);
-		ClearPrint();
-		Print(Math::Sin(ToRadians(meshRigidBody.angle)));
 
 		meshRigidBody.angle += meshRigidBody.angVel;
-		meshRigidBody.angle *= 0.99; // 減衰
+		meshRigidBody.angle *= g_angAttenuate; // 減衰
 
 		const auto center = Vec2{divideCount / 2, 0};
 		const Mat3x2 rotationMat =
@@ -109,7 +109,8 @@ void Main()
 	Window::Resize(1280, 720);
 
 	const Texture mainTexture(Emoji(U"🧸"));
-	constexpr size_t divideCount = 8 - 1;
+	constexpr size_t divideCount1 = 8;
+	constexpr size_t divideCount = divideCount1 - 1;
 	constexpr Vec2 drawSize{120, 120};
 
 	const FilePath shaderPath{U"asset/illust_motion.hlsl"};
@@ -120,7 +121,7 @@ void Main()
 
 	MeshRigidBody meshRigidBody{};
 	Array<MeshBodyPoint> baseMeshGrid{};
-	baseMeshGrid.resize(8 * 8);
+	baseMeshGrid.resize(divideCount1 * divideCount1);
 
 	for (int x = 0; x <= divideCount; ++x)
 	{
@@ -155,6 +156,17 @@ void Main()
 		// UI描画
 		LineY ly{};
 		SimpleGUI::CheckBox(isDrawWires, U"Draw wires", {0, ly.NextLY()});
+
+		if (SimpleGUI::Button(U"Ang Vel +1.0", {0, ly.NextLY()}, 200))
+		{
+			meshRigidBody.angVel += 1.0;
+		}
+		if (SimpleGUI::Button(U"Ang Vel -1.0", {240, ly.CurrentLY()}, 240))
+		{
+			meshRigidBody.angVel += -1.1;
+		}
+		SimpleGUI::Slider(g_angAttenuate, Vec2{0, ly.NextLY()}, 120);
+		SimpleGUI::Headline(U"Ang Attenuate {:.4f}"_fmt(g_angAttenuate), {160, ly.CurrentLY()});
 
 		ly.NextLY();
 		ly.NextLY();
