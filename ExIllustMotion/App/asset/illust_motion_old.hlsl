@@ -38,7 +38,6 @@ cbuffer VSConstants2D : register(b0)
 cbuffer IllustMotionVsCb : register(b1)
 {
     int g_divideCount;
-    float4 g_meshGridOffset[32 * 32];
 }
 
 cbuffer PSConstants2D : register(b0)
@@ -73,16 +72,18 @@ s3d::PSInput VS(uint id: SV_VERTEXID)
     const uint quadId = id / 6;
     const uint mod6 = id % 6;
 
+    // 座標を適当に計算
+    float2 pos = float2(0, 0);
     const uint xId0 = (int)(quadId % g_divideCount);
     const uint yId0 = (int)(quadId / g_divideCount);
 
-    // 三角形の頂点オフセットを考慮
+    // uv座標を計算
     const uint2 xyId1 = uint2(xId0, yId0) + offsetMod6(mod6);
-
-    const float2 pos = g_meshGridOffset[xyId1.x + xyId1.y * (g_divideCount + 1)].xy;
-
     const float step = 1.0 / g_divideCount;
-    const float2 uv = step * xyId1;
+    const uint2 uv = step * xyId1;
+
+    const float2 size = float2(100, 100);
+    pos += uv * size;
 
     result.position = s3d::Transform2D(pos, g_transform);
     result.uv = uv;
