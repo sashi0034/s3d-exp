@@ -66,7 +66,7 @@ namespace ExUiBasic
 			// 	.draw(Arg::top = ColorF{0.1, 0.7}, Arg::bottom = ColorF{0.1, 0.3});
 			(void)p_impl->font(U"チュートリアルメッセージを表示")
 			            .drawAt(TextStyle::Shadow({3, 3}, Palette::Black), messageCenter)
-			            .stretched(40, 0)
+			            .stretched(40, 20)
 			            .shearedX(20)
 			            .drawFrame(3, Palette::White);;
 		}

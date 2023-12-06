@@ -27,6 +27,7 @@ void Main()
 
 	TextureAsset::Register(U"example/particle.png", U"example/particle.png", TextureDesc::Mipped);
 	TextureAsset::Register(U"example/texture/uv.png", U"example/texture/uv.png");
+	TextureAsset::Register(U"example/siv3d-kun.png", U"example/siv3d-kun.png");
 
 	Print(U"Effect test");
 
@@ -54,10 +55,9 @@ void Main()
 		if (Key7.down()) additiveEffect.add(MakeItemObtainEffect2(Cursor::Pos()));
 
 		if (Key8.down())
-			effect.add(MakeFragmentTextureEffect(
+			effect.add(EmitFragmentTextureEffect(
 				Cursor::Pos(),
-				TextureAsset(U"example/texture/uv.png"),
-				{120, 120, 480, 480}));
+				TextureAsset(U"example/siv3d-kun.png")(0,0, 360,360).mirrored(), Palette::White));
 
 		if (KeyQ.down())
 			effect.add(MakeTwinkleEffect(effect, Cursor::Pos()));

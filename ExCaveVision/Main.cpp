@@ -17,7 +17,7 @@ void Main()
 
 	const Texture tex_aqua_noise{U"asset/tex_aqua_noise.png"};
 	const Texture tex_cosmos_noise{U"asset/tex_cosmos_noise.png"};
-	const PixelShader caveVisionPs = HLSL{U"asset/cave_vision.hlsl", U"PS"};
+	const PixelShader caveVisionPs = HLSL{U"asset/cave_vision.hlsl"};
 	const VertexShader softShapeVs = HLSL{U"asset/soft_shape.hlsl"};
 	ConstantBuffer<CaveVisionCb> caveVisionCb{};
 	ConstantBuffer<SoftShapeCb> softShapeCb{};
