@@ -44,7 +44,8 @@ namespace
 	{
 		Vec2 currentPoint;
 		Vec2 targetPoint;
-		Vec2 vel;
+		double slipPos;
+		double slipVel;
 	};
 
 	class LineY
@@ -63,7 +64,7 @@ namespace
 		int m_y{-1};
 	};
 
-	double g_angAttenuate = 0.99;
+	double g_attenuate = 0.99;
 
 	void fixedUpdateMeshes(
 		size_t divideCount,
@@ -76,10 +77,9 @@ namespace
 		meshRigidBody.angVel +=
 			angleSpeed * (Math::Sin(ToRadians(meshRigidBody.angle)) * -1);
 
-		meshRigidBody.angle += meshRigidBody.angVel;
-		meshRigidBody.angle *= g_angAttenuate; // 減衰
+		meshRigidBody.angle = (meshRigidBody.angle + meshRigidBody.angVel) * g_attenuate;
 
-		const auto center = Vec2{divideCount / 2, 0};
+		const auto center = Vec2{divideCount / 2.0, 0};
 		const Mat3x2 rotationMat =
 			Mat3x2::Rotate(ToRadians(meshRigidBody.angle), center * drawSize / divideCount);
 		for (int x = 0; x <= divideCount; ++x)
@@ -88,16 +88,19 @@ namespace
 			{
 				// 剛体の点を更新
 				auto&& p = baseMeshGrid[getMeshGridIndex(divideCount, x, y)];
-				const auto prevTarget = p.targetPoint;
 				p.targetPoint = rotationMat.transformPoint(Vec2{x, y} * drawSize / divideCount);
-				const auto targetDelta = p.targetPoint - prevTarget;
-				const auto deltaVec = p.targetPoint - p.currentPoint;
+
+				// TODO: プロパティ整理
 
 				if ((Vec2{x, y} - center) == Vec2::Zero()) continue;
-				p.vel += ((divideCount * Math::Sqrt(2)) / (Vec2{x, y} - center).lengthSq()) * deltaVec / 100.0;
-				p.vel *= 0.99;
+				// p.slipVel += angleSpeed * (Math::Sin(ToRadians(meshRigidBody.angle)));
+				p.slipPos = -meshRigidBody.angle; //(p.slipPos + p.slipVel) * g_attenuate;
 
-				p.currentPoint += targetDelta + p.vel;
+				const double distCoefficient = (Vec2{x, y} - center).lengthSq() / (divideCount * divideCount);
+
+				p.currentPoint = p.targetPoint
+					+ Mat3x2::Rotate(ToRadians(meshRigidBody.angle)).transformPoint(Vec2{p.slipPos, 0}) *
+					distCoefficient;
 			}
 		}
 	}
@@ -128,10 +131,12 @@ void Main()
 		for (int y = 0; y <= divideCount; ++y)
 		{
 			const auto index = getMeshGridIndex(divideCount, x, y);
-			baseMeshGrid[index].targetPoint = Vec2{x, y} * drawSize / divideCount;
-			baseMeshGrid[index].currentPoint = baseMeshGrid[index].targetPoint;
+			auto&& p = baseMeshGrid[index];
+			p.targetPoint = Vec2{x, y} * drawSize / divideCount;
+			p.currentPoint = p.targetPoint;
+			p.slipVel = -1.5;
 			illustMotionCb->meshGridOffset[index] =
-				Float4(baseMeshGrid[index].currentPoint, Vec2{});
+				Float4(p.currentPoint, Vec2{});
 		}
 	}
 
@@ -165,8 +170,8 @@ void Main()
 		{
 			meshRigidBody.angVel += -1.1;
 		}
-		SimpleGUI::Slider(g_angAttenuate, Vec2{0, ly.NextLY()}, 120);
-		SimpleGUI::Headline(U"Ang Attenuate {:.4f}"_fmt(g_angAttenuate), {160, ly.CurrentLY()});
+		SimpleGUI::Slider(g_attenuate, Vec2{0, ly.NextLY()}, 120);
+		SimpleGUI::Headline(U"Attenuate {:.4f}"_fmt(g_attenuate), {160, ly.CurrentLY()});
 
 		ly.NextLY();
 		ly.NextLY();
