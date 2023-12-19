@@ -10,3 +10,6 @@
 [submodule "external/context"]
 	path = external/context
 	url = https://github.com/boostorg/context.git
+[submodule "psd_sdk"]
+	path = psd_sdk
+	url = https://github.com/MolecularMatters/psd_sdk
