@@ -118,6 +118,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PsdReader.cpp" />
     <ClCompile Include="PsdSamples.cpp" />
     <ClCompile Include="PsdTgaExporter.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -320,6 +321,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PsdDebug.h" />
+    <ClInclude Include="PsdReader.h" />
     <ClInclude Include="PsdSample.h" />
     <ClInclude Include="PsdTgaExporter.h" />
     <ClInclude Include="stdafx.h" />
