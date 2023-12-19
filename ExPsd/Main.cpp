@@ -19,7 +19,7 @@ void Main()
 	int mode = 0;
 	int textureIndex = 0;
 
-	Camera2D camera2D{};
+	Camera2D camera2D{Scene::Size() / 2};
 
 	while (System::Update())
 	{
@@ -40,9 +40,12 @@ void Main()
 			case 1:
 				for (auto&& t : textures) (void)t.draw();
 				break;
+			default:
+				break;
 			}
 		}
 
+		SimpleGUI::Headline(U"Mode: {}"_fmt(mode), Rect(Scene::Size()).tr().movedBy(-100, 50));
 		if (MouseR.down()) mode = (mode + 1) % 2;
 	}
 }

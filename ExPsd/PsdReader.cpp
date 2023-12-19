@@ -110,21 +110,57 @@ namespace
 		return image;
 	}
 
-	void sveRGBA(uint32 width, uint32 height, const uint8_t* src, uint8_t* dest)
+	void saveRGBA(uint32 width, uint32 height, const uint8_t* src, uint8_t* dest)
 	{
-		for (unsigned int i = 0u; i < height; ++i)
+		for (uint32 y = 0u; y < height; ++y)
 		{
-			for (unsigned int j = 0u; j < width; ++j)
+			for (uint32 x = 0u; x < width; ++x)
 			{
-				const uint8_t r = src[(i * width + j) * 4u + 0u];
-				const uint8_t g = src[(i * width + j) * 4u + 1u];
-				const uint8_t b = src[(i * width + j) * 4u + 2u];
-				const uint8_t a = src[(i * width + j) * 4u + 3u];
+				const uint8_t r = src[(y * width + x) * 4u + 0u];
+				const uint8_t g = src[(y * width + x) * 4u + 1u];
+				const uint8_t b = src[(y * width + x) * 4u + 2u];
+				const uint8_t a = src[(y * width + x) * 4u + 3u];
 
-				dest[(i * width + j) * 4u + 2u] = r;
-				dest[(i * width + j) * 4u + 1u] = g;
-				dest[(i * width + j) * 4u + 0u] = b;
-				dest[(i * width + j) * 4u + 3u] = a;
+				dest[(y * width + x) * 4u + 0u] = r;
+				dest[(y * width + x) * 4u + 1u] = g;
+				dest[(y * width + x) * 4u + 2u] = b;
+				dest[(y * width + x) * 4u + 3u] = a;
+			}
+		}
+	}
+
+	void applyMask(Rect maskRect, Size imageSize, const uint8_t* mask, uint8_t* dest)
+	{
+		// for (int32 y = 0; y < maskRect.h; ++y)
+		// {
+		// 	for (int32 x = 0; x < maskRect.w; ++x)
+		// 	{
+		// 		const Point destPoint = maskRect.tl().movedBy(x, y);
+		// 		if (destPoint.x < 0 || imageSize.x <= destPoint.x) continue;
+		// 		if (destPoint.y < 0 || imageSize.y <= destPoint.y) continue;
+		//
+		// 		const int destIndex = (destPoint.y * maskRect.h + destPoint.x) * 4u + 3u;
+		// 		const double maskRate = mask[y * maskRect.h + x] / 255.0;
+		// 		dest[destIndex] = static_cast<uint8>(dest[destIndex] * maskRate);
+		// 	}
+		// }
+
+		for (int32 y = 0u; y < imageSize.y; ++y)
+		{
+			for (int32 x = 0u; x < imageSize.x; ++x)
+			{
+				const Point maskPoint = Point(x, y) - maskRect.tl();
+				const int destIndex = (y * imageSize.x + x) * 4u + 3u;
+
+				if (InRange(maskPoint.x, 0, maskRect.w - 1)
+					&& InRange(maskPoint.y, 0, maskRect.h - 1))
+				{
+					dest[destIndex] -= 255 - mask[maskPoint.y * maskRect.w + maskPoint.x];
+				}
+				else
+				{
+					dest[destIndex] = 0;
+				}
 			}
 		}
 	}
@@ -136,7 +172,9 @@ struct PsdReader::Impl
 
 	int ReadPsd()
 	{
-		const std::wstring srcPath = L"psd/Sample.psd";
+		const std::wstring srcPath =
+			// L"psd/Sample.psd";
+			L"psd/miko15.psd";
 
 		MallocAllocator allocator;
 		NativeFile file(&allocator);
@@ -219,52 +257,25 @@ struct PsdReader::Impl
 					}
 				}
 
+				if (document->bitsPerChannel != 8)
+				{
+					Console.writeln(U"{}-BPC is not supported."_fmt(document->bitsPerChannel));
+					continue;
+				}
+
 				// interleave the different pieces of planar canvas data into one RGB or RGBA image, depending on what channels
 				// we found, and what color mode the document is stored in.
 				uint8_t* image8 = nullptr;
-				uint16_t* image16 = nullptr;
-				float32_t* image32 = nullptr;
 				if (channelCount == 3u)
 				{
-					if (document->bitsPerChannel == 8)
-					{
-						image8 = CreateInterleavedImage<uint8_t>(
-							&allocator, canvasData[0], canvasData[1],
-							canvasData[2], document->width, document->height);
-					}
-					else if (document->bitsPerChannel == 16)
-					{
-						image16 = CreateInterleavedImage<uint16_t>
-						(&allocator, canvasData[0], canvasData[1],
-						 canvasData[2], document->width, document->height);
-					}
-					else if (document->bitsPerChannel == 32)
-					{
-						image32 = CreateInterleavedImage<float32_t>(
-							&allocator, canvasData[0], canvasData[1],
-							canvasData[2], document->width, document->height);
-					}
+					Console.writeln(U"Missing alpha image is not supported."_fmt(document->bitsPerChannel));
+					continue;
 				}
-				else if (channelCount == 4u)
+				if (channelCount == 4u)
 				{
-					if (document->bitsPerChannel == 8)
-					{
-						image8 = CreateInterleavedImage<uint8_t>(&allocator, canvasData[0], canvasData[1],
-						                                         canvasData[2], canvasData[3], document->width,
-						                                         document->height);
-					}
-					else if (document->bitsPerChannel == 16)
-					{
-						image16 = CreateInterleavedImage<uint16_t>(&allocator, canvasData[0], canvasData[1],
-						                                           canvasData[2], canvasData[3], document->width,
-						                                           document->height);
-					}
-					else if (document->bitsPerChannel == 32)
-					{
-						image32 = CreateInterleavedImage<float32_t>(&allocator, canvasData[0], canvasData[1],
-						                                            canvasData[2], canvasData[3], document->width,
-						                                            document->height);
-					}
+					image8 = CreateInterleavedImage<uint8_t>(
+						&allocator, canvasData[0], canvasData[1], canvasData[2], canvasData[3],
+						document->width, document->height);
 				}
 
 				allocator.Free(canvasData[0]);
@@ -290,43 +301,48 @@ struct PsdReader::Impl
 				// at this point, image8, image16 or image32 store either a 8-bit, 16-bit, or 32-bit image, respectively.
 				// the image data is stored in interleaved RGB or RGBA, and has the size "document->width*document->height".
 				// it is up to you to do whatever you want with the image data. in the sample, we simply write the image to a .TGA file.
+				s3d::Image image{document->width, document->height};
 				if (channelCount == 3u)
 				{
-					if (document->bitsPerChannel == 8u)
-					{
-						// RGB
-						Print(Unicode::FromWstring(layerName.str()));
-					}
+					// RGB
+					Console.writeln(U"Missing alpha image is not supported."_fmt(document->bitsPerChannel));
+					continue;
 				}
-				else if (channelCount == 4u)
+				if (channelCount == 4u)
 				{
-					if (document->bitsPerChannel == 8u)
-					{
-						// RGBA
-						auto a = image8[0];
-						Print(Unicode::FromWstring(layerName.str()));
+					// RGBA
+					auto a = image8[0];
+					Print(Unicode::FromWstring(layerName.str()));
 
-						s3d::Image image{document->width, document->height};
-						sveRGBA(document->width, document->height, image8, image.dataAsUint8());
-						m_textures.push_back(DynamicTexture(image));
-					}
+					saveRGBA(document->width, document->height, image8, image.dataAsUint8());
 				}
 
 				allocator.Free(image8);
-				allocator.Free(image16);
-				allocator.Free(image32);
 
 				// in addition to the layer data, we also want to extract the user and/or vector mask.
 				// luckily, this has been handled already by the ExtractLayer() function. we just need to check whether a mask exists.
 				if (layer->layerMask)
 				{
+					const int32 maskW = layer->layerMask->right - layer->layerMask->left;
+					const int32 maskH = layer->layerMask->bottom - layer->layerMask->top;
+					const Rect maskRect{layer->layerMask->left, layer->layerMask->top, maskW, maskH};
+
 					Print(U"Mask: " + Unicode::FromWstring(layerName.str()));
+					const void* maskData = layer->layerMask->data;
+					applyMask(
+						maskRect,
+						{document->width, document->height},
+						static_cast<const uint8_t*>(maskData),
+						image.dataAsUint8());
 				}
 
 				if (layer->vectorMask)
 				{
 					Print(U"Vector Mask: " + Unicode::FromWstring(layerName.str()));
+					Console.writeln(U"Vector mask is not supported.");
 				}
+
+				m_textures.push_back(DynamicTexture(image));
 			}
 
 			DestroyLayerMaskSection(layerMaskSection, &allocator);
