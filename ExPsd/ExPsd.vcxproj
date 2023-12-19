@@ -413,6 +413,9 @@
       <Project>{76afa79c-7fe1-493a-b920-52ee72278884}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="App\py\clip_combine.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
