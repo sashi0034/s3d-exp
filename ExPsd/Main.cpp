@@ -7,6 +7,10 @@ using namespace ExPsd;
 
 void Main()
 {
+	Window::SetTitle(U"ExPsd");
+
+	Window::SetStyle(WindowStyle::Sizable);
+	Scene::Resize(720, 1280);
 	Scene::SetBackground(ColorF{0.3});
 
 	// int result = StartSample();
@@ -45,7 +49,10 @@ void Main()
 			}
 		}
 
-		SimpleGUI::Headline(U"Mode: {}"_fmt(mode), Rect(Scene::Size()).tr().movedBy(-100, 50));
+		SimpleGUI::Headline(U"Mode: {}"_fmt(mode), Rect(Scene::Size()).tr().movedBy(-150, 50));
+		SimpleGUI::Headline(U"All layers: {}"_fmt(
+			                    psdReader.Textures().size()), Rect(Scene::Size()).tr().movedBy(-150, 100));
+
 		if (MouseR.down()) mode = (mode + 1) % 2;
 	}
 }

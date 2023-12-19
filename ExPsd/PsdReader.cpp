@@ -131,20 +131,6 @@ namespace
 
 	void applyMask(Rect maskRect, Size imageSize, const uint8_t* mask, uint8_t* dest)
 	{
-		// for (int32 y = 0; y < maskRect.h; ++y)
-		// {
-		// 	for (int32 x = 0; x < maskRect.w; ++x)
-		// 	{
-		// 		const Point destPoint = maskRect.tl().movedBy(x, y);
-		// 		if (destPoint.x < 0 || imageSize.x <= destPoint.x) continue;
-		// 		if (destPoint.y < 0 || imageSize.y <= destPoint.y) continue;
-		//
-		// 		const int destIndex = (destPoint.y * maskRect.h + destPoint.x) * 4u + 3u;
-		// 		const double maskRate = mask[y * maskRect.h + x] / 255.0;
-		// 		dest[destIndex] = static_cast<uint8>(dest[destIndex] * maskRate);
-		// 	}
-		// }
-
 		for (int32 y = 0u; y < imageSize.y; ++y)
 		{
 			for (int32 x = 0u; x < imageSize.x; ++x)
@@ -155,7 +141,8 @@ namespace
 				if (InRange(maskPoint.x, 0, maskRect.w - 1)
 					&& InRange(maskPoint.y, 0, maskRect.h - 1))
 				{
-					dest[destIndex] -= 255 - mask[maskPoint.y * maskRect.w + maskPoint.x];
+					const double maskRate = mask[maskPoint.y * maskRect.w + maskPoint.x] / 255.0;
+					dest[destIndex] = static_cast<uint8>(dest[destIndex] * maskRate);
 				}
 				else
 				{
@@ -227,6 +214,9 @@ struct PsdReader::Impl
 			{
 				Layer* layer = &layerMaskSection->layers[i];
 				ExtractLayer(document, &file, &allocator, layer);
+
+				// 非表示
+				if (layer->isVisible == false) continue;
 
 				// check availability of R, G, B, and A channels.
 				// we need to determine the indices of channels individually, because there is no guarantee that R is the first channel,
