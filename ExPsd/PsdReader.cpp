@@ -42,13 +42,13 @@ namespace
 	using namespace psd;
 	using Allocator = psd::Allocator;
 
-	constexpr unsigned int CHANNEL_NOT_FOUND = UINT_MAX;
+	constexpr uint32 CHANNEL_NOT_FOUND = UINT_MAX;
 
-	unsigned int FindChannel(Layer* layer, int16_t channelType)
+	uint32 FindChannel(const Layer* layer, int16_t channelType)
 	{
-		for (unsigned int i = 0; i < layer->channelCount; ++i)
+		for (uint32 i = 0; i < layer->channelCount; ++i)
 		{
-			Channel* channel = &layer->channels[i];
+			const Channel* channel = &layer->channels[i];
 			if (channel->data && channel->type == channelType)
 				return i;
 		}
@@ -57,8 +57,8 @@ namespace
 	}
 
 	template <typename T, typename DataHolder>
-	static void* ExpandChannelToCanvas(Allocator* allocator, const DataHolder* layer, const void* data,
-	                                   unsigned int canvasWidth, unsigned int canvasHeight)
+	void* ExpandChannelToCanvas(
+		Allocator* allocator, const DataHolder* layer, const void* data, uint32 canvasWidth, uint32 canvasHeight)
 	{
 		T* canvasData = static_cast<T*>(allocator->Allocate(sizeof(T) * canvasWidth * canvasHeight, 16u));
 		memset(canvasData, 0u, sizeof(T) * canvasWidth * canvasHeight);
@@ -69,12 +69,12 @@ namespace
 		return canvasData;
 	}
 
-	static void* ExpandChannelToCanvas(const Document* document, Allocator* allocator, Layer* layer, Channel* channel)
+	void* ExpandChannelToCanvas(const Document* document, Allocator* allocator, Layer* layer, Channel* channel)
 	{
 		if (document->bitsPerChannel == 8)
 			return ExpandChannelToCanvas<uint8_t>(allocator, layer, channel->data, document->width, document->height);
 		else if (document->bitsPerChannel == 16)
-			return ExpandChannelToCanvas<uint16_t>(allocator, layer, channel->data, document->width, document->height);
+			return ExpandChannelToCanvas<uint16>(allocator, layer, channel->data, document->width, document->height);
 		else if (document->bitsPerChannel == 32)
 			return ExpandChannelToCanvas<float32_t>(allocator, layer, channel->data, document->width, document->height);
 
@@ -82,8 +82,8 @@ namespace
 	}
 
 	template <typename T>
-	T* CreateInterleavedImage(Allocator* allocator, const void* srcR, const void* srcG, const void* srcB,
-	                          unsigned int width, unsigned int height)
+	T* CreateInterleavedImage(
+		Allocator* allocator, const void* srcR, const void* srcG, const void* srcB, uint32 width, uint32 height)
 	{
 		T* image = static_cast<T*>(allocator->Allocate(width * height * 4u * sizeof(T), 16u));
 
@@ -96,8 +96,10 @@ namespace
 	}
 
 	template <typename T>
-	T* CreateInterleavedImage(Allocator* allocator, const void* srcR, const void* srcG, const void* srcB,
-	                          const void* srcA, unsigned int width, unsigned int height)
+	T* CreateInterleavedImage(
+		Allocator* allocator,
+		const void* srcR, const void* srcG, const void* srcB, const void* srcA,
+		uint32 width, uint32 height)
 	{
 		T* image = static_cast<T*>(allocator->Allocate(width * height * 4u * sizeof(T), 16u));
 
@@ -210,7 +212,7 @@ struct PsdReader::Impl
 			hasTransparencyMask = layerMaskSection->hasTransparencyMask;
 
 			// extract all layers one by one. this should be done in parallel for maximum efficiency.
-			for (unsigned int i = 0; i < layerMaskSection->layerCount; ++i)
+			for (uint32 i = 0; i < layerMaskSection->layerCount; ++i)
 			{
 				Layer* layer = &layerMaskSection->layers[i];
 				ExtractLayer(document, &file, &allocator, layer);
@@ -221,16 +223,16 @@ struct PsdReader::Impl
 				// check availability of R, G, B, and A channels.
 				// we need to determine the indices of channels individually, because there is no guarantee that R is the first channel,
 				// G is the second, B is the third, and so on.
-				const unsigned int indexR = FindChannel(layer, channelType::R);
-				const unsigned int indexG = FindChannel(layer, channelType::G);
-				const unsigned int indexB = FindChannel(layer, channelType::B);
-				const unsigned int indexA = FindChannel(layer, channelType::TRANSPARENCY_MASK);
+				const uint32 indexR = FindChannel(layer, channelType::R);
+				const uint32 indexG = FindChannel(layer, channelType::G);
+				const uint32 indexB = FindChannel(layer, channelType::B);
+				const uint32 indexA = FindChannel(layer, channelType::TRANSPARENCY_MASK);
 
 				// note that channel data is only as big as the layer it belongs to, e.g. it can be smaller or bigger than the canvas,
 				// depending on where it is positioned. therefore, we use the provided utility functions to expand/shrink the channel data
 				// to the canvas size. of course, you can work with the channel data directly if you need to.
 				void* canvasData[4] = {};
-				unsigned int channelCount = 0u;
+				uint32 channelCount = 0u;
 				if ((indexR != CHANNEL_NOT_FOUND) && (indexG != CHANNEL_NOT_FOUND) && (indexB != CHANNEL_NOT_FOUND))
 				{
 					// RGB channels were found.
@@ -280,7 +282,7 @@ struct PsdReader::Impl
 				if (layer->utf16Name)
 				{
 					//In Windows wchar_t is utf16
-					PSD_STATIC_ASSERT(sizeof(wchar_t) == sizeof(uint16_t));
+					PSD_STATIC_ASSERT(sizeof(wchar_t) == sizeof(uint16));
 					layerName << reinterpret_cast<wchar_t*>(layer->utf16Name);
 				}
 				else
