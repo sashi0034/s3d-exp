@@ -10,6 +10,8 @@
 // in the sample, we use the provided malloc allocator for all memory allocations. likewise, we also use the provided
 // native file interface.
 // in your code, feel free to use whatever allocator you have lying around.
+#include <iso646.h>
+
 #include "Psd/PsdMallocAllocator.h"
 #include "Psd/PsdNativeFile.h"
 
@@ -34,7 +36,6 @@
 #include "Psd/PsdExportDocument.h"
 
 #include "PsdTgaExporter.h"
-#include "PsdDebug.h"
 #include "Psd/PsdLayerType.h"
 
 namespace
@@ -92,9 +93,10 @@ namespace
 
 struct PsdReader::Impl
 {
-	Array<DynamicTexture> m_textures{};
+	PSDError m_error{};
+	PSDObject m_object{};
 
-	int ReadPsd()
+	int Read()
 	{
 		const std::wstring srcPath =
 			// L"psd/Sample.psd";
@@ -103,40 +105,26 @@ struct PsdReader::Impl
 		MallocAllocator allocator;
 		NativeFile file(&allocator);
 
-		// try opening the file. if it fails, bail out.
-		if (!file.OpenRead(srcPath.c_str()))
+		if (not file.OpenRead(srcPath.c_str()))
 		{
-			PSD_SAMPLE_LOG("Cannot open file.\n");
+			m_error = PSDError(U"Cannot open file.");
 			return 1;
 		}
 
-		// create a new document that can be used for extracting different sections from the PSD.
-		// additionally, the document stores information like width, height, bits per pixel, etc.
 		Document* document = CreateDocument(&file, &allocator);
-		if (!document)
+		if (not document)
 		{
-			PSD_SAMPLE_LOG("Cannot create document.\n");
+			m_error = PSDError(U"Cannot create document.");
 			file.Close();
 			return 1;
 		}
 
-		// the sample only supports RGB colormode
 		if (document->colorMode != colorMode::RGB)
 		{
-			PSD_SAMPLE_LOG("Document is not in RGB color mode.\n");
+			m_error = PSDError(U"Document is not in RGB color mode.");
 			DestroyDocument(document, &allocator);
 			file.Close();
 			return 1;
-		}
-
-		// extract image resources section.
-		// this gives access to the ICC profile, EXIF data and XMP metadata.
-		{
-			ImageResourcesSection* imageResourcesSection = ParseImageResourcesSection(document, &file, &allocator);
-			PSD_SAMPLE_LOG("XMP metadata:\n");
-			PSD_SAMPLE_LOG(imageResourcesSection->xmpMetadata);
-			PSD_SAMPLE_LOG("\n");
-			DestroyImageResourcesSection(imageResourcesSection, &allocator);
 		}
 
 		Size canvasSize{document->width, document->height};
@@ -151,14 +139,17 @@ struct PsdReader::Impl
 		{
 			hasTransparencyMask = layerMaskSection->hasTransparencyMask;
 
+			m_object.layers.resize(layerMaskSection->layerCount);
+
 			// extract all layers one by one. this should be done in parallel for maximum efficiency.
 			for (uint32 i = 0; i < layerMaskSection->layerCount; ++i)
 			{
+				auto&& outputLayer = m_object.layers[i];
+
 				Layer* layer = &layerMaskSection->layers[i];
 				ExtractLayer(document, &file, &allocator, layer);
 
-				// 非表示
-				if (layer->isVisible == false) continue;
+				outputLayer.isVisible = layer->isVisible;
 
 				if (layer->type != layerType::ANY)
 				{
@@ -247,7 +238,7 @@ struct PsdReader::Impl
 					Console.writeln(U"Vector mask is not supported.");
 				}
 
-				m_textures.push_back(DynamicTexture(image));
+				outputLayer.texture = DynamicTexture(image);
 			}
 
 			DestroyLayerMaskSection(layerMaskSection, &allocator);
@@ -268,13 +259,19 @@ namespace ExPsd
 	{
 	}
 
-	void PsdReader::ReadPsd()
+	PsdReader::PsdReader(const Config& config) :
+		p_impl(std::make_shared<Impl>())
 	{
-		p_impl->ReadPsd();
+		p_impl->Read();
 	}
 
-	const Array<DynamicTexture>& PsdReader::Textures() const
+	Optional<PSDError> PsdReader::getCriticalError() const
 	{
-		return p_impl->m_textures;
+		return p_impl->m_error;
+	}
+
+	const PSDObject& PsdReader::getObject() const
+	{
+		return p_impl->m_object;
 	}
 }

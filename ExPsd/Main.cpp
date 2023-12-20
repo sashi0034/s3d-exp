@@ -18,16 +18,19 @@ void Main()
 
 	Stopwatch sw{};
 	sw.start();
-	PsdReader psdReader{};
-	psdReader.ReadPsd();
-	const auto textures = psdReader.Textures();
+	PsdReader psdReader{
+		{
+			.storeTarget = StoreTarget::Image
+		}
+	};
+	auto psdObject = psdReader.getObject();
 	sw.pause();
 	Console.writeln(U"Passed: {}"_fmt(sw.sF()));
 
 	int mode = 0;
 	int textureIndex = 0;
 
-	Camera2D camera2D{Scene::Size() / 2};
+	Camera2D camera2D{psdObject.documentSize / 2};
 
 	while (System::Update())
 	{
@@ -40,13 +43,12 @@ void Main()
 			case 0:
 				if (MouseL.down())
 				{
-					textureIndex = (textureIndex + 1) % textures.size();
+					textureIndex = (textureIndex + 1) % psdObject.layers.size();
 				}
-
-				(void)textures[textureIndex].draw();
+				(void)psdObject.layers[textureIndex].texture.draw();
 				break;
 			case 1:
-				for (auto&& t : textures) (void)t.draw();
+				psdObject.draw();
 				break;
 			default:
 				break;
@@ -55,7 +57,7 @@ void Main()
 
 		SimpleGUI::Headline(U"Mode: {}"_fmt(mode), Rect(Scene::Size()).tr().movedBy(-150, 50));
 		SimpleGUI::Headline(U"All layers: {}"_fmt(
-			                    psdReader.Textures().size()), Rect(Scene::Size()).tr().movedBy(-150, 100));
+			                    psdObject.layers.size()), Rect(Scene::Size()).tr().movedBy(-150, 100));
 
 		if (MouseR.down()) mode = (mode + 1) % 2;
 	}
