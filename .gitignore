@@ -399,6 +399,7 @@ gmon.out
 # Ignore compiled binaries
 **/App/*.app
 **/App/*.exe
+**/App/*.lib
 
 # Ignore any saved local files
 **/App/AS_DEBUG/
