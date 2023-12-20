@@ -41,11 +41,10 @@ namespace
 {
 	using namespace ExPsd;
 	using namespace psd;
-	using Allocator = psd::Allocator;
 
 	constexpr uint32 CHANNEL_NOT_FOUND = UINT_MAX;
 
-	uint32 FindChannel(const Layer* layer, int16_t channelType)
+	uint32 findChannel(const Layer* layer, int16 channelType)
 	{
 		for (uint32 i = 0; i < layer->channelCount; ++i)
 		{
@@ -57,79 +56,14 @@ namespace
 		return CHANNEL_NOT_FOUND;
 	}
 
-	template <typename T, typename DataHolder>
-	void* ExpandChannelToCanvas(
-		Allocator* allocator, const DataHolder* layer, const void* data, uint32 canvasWidth, uint32 canvasHeight)
+	void expandChannelToCanvas(
+		const Layer* layer, const Channel* channel, Array<uint8>& canvasData, Size canvasSize)
 	{
-		T* canvasData = static_cast<T*>(allocator->Allocate(sizeof(T) * canvasWidth * canvasHeight, 16u));
-		memset(canvasData, 0u, sizeof(T) * canvasWidth * canvasHeight);
-
-		imageUtil::CopyLayerData(static_cast<const T*>(data), canvasData, layer->left, layer->top, layer->right,
-		                         layer->bottom, canvasWidth, canvasHeight);
-
-		return canvasData;
-	}
-
-	void* ExpandChannelToCanvas(const Document* document, Allocator* allocator, Layer* layer, Channel* channel)
-	{
-		if (document->bitsPerChannel == 8)
-			return ExpandChannelToCanvas<uint8_t>(allocator, layer, channel->data, document->width, document->height);
-		else if (document->bitsPerChannel == 16)
-			return ExpandChannelToCanvas<uint16>(allocator, layer, channel->data, document->width, document->height);
-		else if (document->bitsPerChannel == 32)
-			return ExpandChannelToCanvas<float32_t>(allocator, layer, channel->data, document->width, document->height);
-
-		return nullptr;
-	}
-
-	template <typename T>
-	T* CreateInterleavedImage(
-		Allocator* allocator, const void* srcR, const void* srcG, const void* srcB, uint32 width, uint32 height)
-	{
-		T* image = static_cast<T*>(allocator->Allocate(width * height * 4u * sizeof(T), 16u));
-
-		const T* r = static_cast<const T*>(srcR);
-		const T* g = static_cast<const T*>(srcG);
-		const T* b = static_cast<const T*>(srcB);
-		imageUtil::InterleaveRGB(r, g, b, T(0), image, width, height);
-
-		return image;
-	}
-
-	template <typename T>
-	T* CreateInterleavedImage(
-		Allocator* allocator,
-		const void* srcR, const void* srcG, const void* srcB, const void* srcA,
-		uint32 width, uint32 height)
-	{
-		T* image = static_cast<T*>(allocator->Allocate(width * height * 4u * sizeof(T), 16u));
-
-		const T* r = static_cast<const T*>(srcR);
-		const T* g = static_cast<const T*>(srcG);
-		const T* b = static_cast<const T*>(srcB);
-		const T* a = static_cast<const T*>(srcA);
-		imageUtil::InterleaveRGBA(r, g, b, a, image, width, height);
-
-		return image;
-	}
-
-	void saveRGBA(uint32 width, uint32 height, const uint8_t* src, uint8_t* dest)
-	{
-		for (uint32 y = 0u; y < height; ++y)
-		{
-			for (uint32 x = 0u; x < width; ++x)
-			{
-				const uint8_t r = src[(y * width + x) * 4u + 0u];
-				const uint8_t g = src[(y * width + x) * 4u + 1u];
-				const uint8_t b = src[(y * width + x) * 4u + 2u];
-				const uint8_t a = src[(y * width + x) * 4u + 3u];
-
-				dest[(y * width + x) * 4u + 0u] = r;
-				dest[(y * width + x) * 4u + 1u] = g;
-				dest[(y * width + x) * 4u + 2u] = b;
-				dest[(y * width + x) * 4u + 3u] = a;
-			}
-		}
+		imageUtil::CopyLayerData(
+			static_cast<uint8*>(channel->data),
+			canvasData.data(),
+			layer->left, layer->top, layer->right, layer->bottom,
+			canvasSize.x, canvasSize.y);
 	}
 
 	void applyMask(Rect maskRect, Size imageSize, const uint8_t* mask, uint8_t* dest)
@@ -205,6 +139,11 @@ struct PsdReader::Impl
 			DestroyImageResourcesSection(imageResourcesSection, &allocator);
 		}
 
+		Size canvasSize{document->width, document->height};
+		std::array<Array<uint8>, 4> canvasData{};
+		canvasData.fill(Array<uint8>(canvasSize.x * canvasSize.y));
+		Array<Color> colorArray{document->width * document->height};
+
 		// extract all layers and masks.
 		bool hasTransparencyMask = false;
 		LayerMaskSection* layerMaskSection = ParseLayerMaskSection(document, &file, &allocator);
@@ -229,30 +168,25 @@ struct PsdReader::Impl
 				// check availability of R, G, B, and A channels.
 				// we need to determine the indices of channels individually, because there is no guarantee that R is the first channel,
 				// G is the second, B is the third, and so on.
-				const uint32 indexR = FindChannel(layer, channelType::R);
-				const uint32 indexG = FindChannel(layer, channelType::G);
-				const uint32 indexB = FindChannel(layer, channelType::B);
-				const uint32 indexA = FindChannel(layer, channelType::TRANSPARENCY_MASK);
+				const uint32 indexR = findChannel(layer, channelType::R);
+				const uint32 indexG = findChannel(layer, channelType::G);
+				const uint32 indexB = findChannel(layer, channelType::B);
+				const uint32 indexA = findChannel(layer, channelType::TRANSPARENCY_MASK);
+				if (indexA == CHANNEL_NOT_FOUND)
+				{
+					Console.writeln(U"Missing alpha");
+					continue;
+				}
 
-				// note that channel data is only as big as the layer it belongs to, e.g. it can be smaller or bigger than the canvas,
-				// depending on where it is positioned. therefore, we use the provided utility functions to expand/shrink the channel data
-				// to the canvas size. of course, you can work with the channel data directly if you need to.
-				void* canvasData[4] = {};
-				uint32 channelCount = 0u;
 				if ((indexR != CHANNEL_NOT_FOUND) && (indexG != CHANNEL_NOT_FOUND) && (indexB != CHANNEL_NOT_FOUND))
 				{
 					// RGB channels were found.
-					canvasData[0] = ExpandChannelToCanvas(document, &allocator, layer, &layer->channels[indexR]);
-					canvasData[1] = ExpandChannelToCanvas(document, &allocator, layer, &layer->channels[indexG]);
-					canvasData[2] = ExpandChannelToCanvas(document, &allocator, layer, &layer->channels[indexB]);
-					channelCount = 3u;
+					expandChannelToCanvas(layer, &layer->channels[indexR], canvasData[0], canvasSize);
+					expandChannelToCanvas(layer, &layer->channels[indexG], canvasData[1], canvasSize);
+					expandChannelToCanvas(layer, &layer->channels[indexB], canvasData[2], canvasSize);
 
-					if (indexA != CHANNEL_NOT_FOUND)
-					{
-						// A channel was also found.
-						canvasData[3] = ExpandChannelToCanvas(document, &allocator, layer, &layer->channels[indexA]);
-						channelCount = 4u;
-					}
+					canvasData[3].fill(0);
+					expandChannelToCanvas(layer, &layer->channels[indexA], canvasData[3], canvasSize);
 				}
 
 				if (document->bitsPerChannel != 8)
@@ -261,25 +195,10 @@ struct PsdReader::Impl
 					continue;
 				}
 
-				// interleave the different pieces of planar canvas data into one RGB or RGBA image, depending on what channels
-				// we found, and what color mode the document is stored in.
-				uint8_t* image8 = nullptr;
-				if (channelCount == 3u)
-				{
-					Console.writeln(U"Missing alpha image is not supported."_fmt(document->bitsPerChannel));
-					continue;
-				}
-				if (channelCount == 4u)
-				{
-					image8 = CreateInterleavedImage<uint8_t>(
-						&allocator, canvasData[0], canvasData[1], canvasData[2], canvasData[3],
-						document->width, document->height);
-				}
-
-				allocator.Free(canvasData[0]);
-				allocator.Free(canvasData[1]);
-				allocator.Free(canvasData[2]);
-				allocator.Free(canvasData[3]);
+				imageUtil::InterleaveRGBA(
+					canvasData[0].data(), canvasData[1].data(), canvasData[2].data(), canvasData[3].data(),
+					reinterpret_cast<uint8_t*>(colorArray.data()),
+					canvasSize.x, canvasSize.y);
 
 				// get the layer name.
 				// Unicode data is preferred because it is not truncated by Photoshop, but unfortunately it is optional.
@@ -299,24 +218,11 @@ struct PsdReader::Impl
 				// the image data is stored in interleaved RGB or RGBA, and has the size "document->width*document->height".
 				// it is up to you to do whatever you want with the image data. in the sample, we simply write the image to a .TGA file.
 				const String layerNameU32 = (Unicode::FromWstring(layerName.str()));
-				s3d::Image image{};
 				Print(layerNameU32);
-				if (channelCount == 4u)
-				{
-					// RGBA
-					auto colorHead = reinterpret_cast<Color*>(image8);
-					Array<Color> colorArray{colorHead, colorHead + document->width * document->height};
-					Grid<Color> colorData{document->width, document->height, colorArray};
-					image = Image(colorData);
-					// saveRGBA(document->width, document->height, image8, image.dataAsUint8());
-				}
-				else
-				{
-					Console.writeln(
-						U"Unsupported channel count: {}, {}"_fmt(document->bitsPerChannel, layerNameU32));
-					allocator.Free(image8);
-					continue;
-				}
+
+				// RGBA
+				Grid<Color> colorData{document->width, document->height, colorArray};
+				auto image = Image(colorData);
 
 				// in addition to the layer data, we also want to extract the user and/or vector mask.
 				// luckily, this has been handled already by the ExtractLayer() function. we just need to check whether a mask exists.
