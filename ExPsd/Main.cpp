@@ -16,9 +16,13 @@ void Main()
 	// int result = StartSample();
 	// Print(result);
 
+	Stopwatch sw{};
+	sw.start();
 	PsdReader psdReader{};
 	psdReader.ReadPsd();
 	const auto textures = psdReader.Textures();
+	sw.pause();
+	Console.writeln(U"Passed: {}"_fmt(sw.sF()));
 
 	int mode = 0;
 	int textureIndex = 0;
