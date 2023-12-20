@@ -35,6 +35,7 @@
 
 #include "PsdTgaExporter.h"
 #include "PsdDebug.h"
+#include "Psd/PsdLayerType.h"
 
 namespace
 {
@@ -220,6 +221,11 @@ struct PsdReader::Impl
 				// 非表示
 				if (layer->isVisible == false) continue;
 
+				if (layer->type != layerType::ANY)
+				{
+					Console.writeln(U"Type: {}"_fmt(layer->type));
+				}
+
 				// check availability of R, G, B, and A channels.
 				// we need to determine the indices of channels individually, because there is no guarantee that R is the first channel,
 				// G is the second, B is the third, and so on.
@@ -289,27 +295,28 @@ struct PsdReader::Impl
 				{
 					layerName << layer->name.c_str();
 				}
-
 				// at this point, image8, image16 or image32 store either a 8-bit, 16-bit, or 32-bit image, respectively.
 				// the image data is stored in interleaved RGB or RGBA, and has the size "document->width*document->height".
 				// it is up to you to do whatever you want with the image data. in the sample, we simply write the image to a .TGA file.
-				s3d::Image image{document->width, document->height};
-				if (channelCount == 3u)
-				{
-					// RGB
-					Console.writeln(U"Missing alpha image is not supported."_fmt(document->bitsPerChannel));
-					continue;
-				}
+				const String layerNameU32 = (Unicode::FromWstring(layerName.str()));
+				s3d::Image image{};
+				Print(layerNameU32);
 				if (channelCount == 4u)
 				{
 					// RGBA
-					auto a = image8[0];
-					Print(Unicode::FromWstring(layerName.str()));
-
-					saveRGBA(document->width, document->height, image8, image.dataAsUint8());
+					auto colorHead = reinterpret_cast<Color*>(image8);
+					Array<Color> colorArray{colorHead, colorHead + document->width * document->height};
+					Grid<Color> colorData{document->width, document->height, colorArray};
+					image = Image(colorData);
+					// saveRGBA(document->width, document->height, image8, image.dataAsUint8());
 				}
-
-				allocator.Free(image8);
+				else
+				{
+					Console.writeln(
+						U"Unsupported channel count: {}, {}"_fmt(document->bitsPerChannel, layerNameU32));
+					allocator.Free(image8);
+					continue;
+				}
 
 				// in addition to the layer data, we also want to extract the user and/or vector mask.
 				// luckily, this has been handled already by the ExtractLayer() function. we just need to check whether a mask exists.
