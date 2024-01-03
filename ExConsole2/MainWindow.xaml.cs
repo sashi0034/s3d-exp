@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -33,14 +34,13 @@ namespace ExConsole2
 
         public MainWindow()
         {
-            AllocConsole();
             InitializeComponent();
 
             // for (int i = 0; i < 1000; ++i)
             // {
             //     addLogging("ここに表示されるテキストは選択してコピーできます 🌴");
             // }
-            ConnectToPipe(_cancellation.Token);
+            connectToPipe(_cancellation.Token);
         }
 
         public void addLogging(string text)
@@ -55,23 +55,27 @@ namespace ExConsole2
             stackPanel.Children.Add(textBox);
         }
 
-        private async Task ConnectToPipe(CancellationToken cancellation)
+        private async Task connectToPipe(CancellationToken cancellation)
         {
+            addLogging("Waiting...");
+            using StreamReader reader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8);
             while (true)
             {
-                addLogging("Waiting...");
-                string? line = await Task.Run(() => Console.In.ReadLine(), cancellation);
-                if (line == null) continue;
-
-                Dispatcher.Invoke(() =>
+                var input = await reader.ReadLineAsync(cancellation);
+                addLogging("🗨️ input");
+                if (input == null)
                 {
-                    // ここでWPFアプリケーションのUIを更新
-                    addLogging(line);
-                });
+                    addLogging("😢 null");
+                    await Task.Delay(1000, cancellation);
+                    continue;
+                }
+
+                // UIスレッドで処理する必要がある場合
+                Dispatcher.Invoke(() => { addLogging("📝 " + input); });
             }
         }
 
-        private void onClosed(object? sender, EventArgs e)
+        private void onClosing(object? sender, CancelEventArgs e)
         {
             _cancellation.Cancel();
         }
