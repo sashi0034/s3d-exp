@@ -32,6 +32,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExStaticLib", "ExStaticLib\ExStaticLib.vcxproj", "{A341F18F-6519-4ECD-A6F5-64729B8ED8F3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExConsole", "ExConsole\ExConsole.vcxproj", "{B4BFB550-E2C4-4451-9D5D-07498C059F50}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8E6E6456-2DEF-4771-A7BF-D8703B5F79F9} = {8E6E6456-2DEF-4771-A7BF-D8703B5F79F9}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExConsole2", "ExConsole2\ExConsole2.csproj", "{8E6E6456-2DEF-4771-A7BF-D8703B5F79F9}"
 EndProject
