@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ExConsole2"
         mc:Ignorable="d"
+        ResizeMode="CanResize"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <ScrollViewer>
+            <StackPanel Name="stackPanel">
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Window>
