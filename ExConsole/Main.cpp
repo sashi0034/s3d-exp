@@ -2,7 +2,7 @@
 
 void Main()
 {
-	ChildProcess childLogger{U"../../ExConsole2/bin/Debug/net7.0-windows/ExConsole2.exe", Pipe::StdInOut};
+	ChildProcess childLogger{U"../../ExConsole2/bin/Release/net7.0-windows/ExConsole2.exe", Pipe::StdInOut};
 
 	double t{};
 
