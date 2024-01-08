@@ -1,5 +1,6 @@
 ﻿# include <Siv3D.hpp> // Siv3D v0.6.12
-#include "Windows.h"
+#include <Windows.h>
+#include <dwmapi.h>
 
 namespace
 {
@@ -29,9 +30,15 @@ namespace
 
 void Main()
 {
+	Window::SetTitle(U"ExWinAPI");
+
 	// 自前ウィンドウ処理
 	const auto hWnd = static_cast<HWND>(s3d::Platform::Windows::Window::GetHWND());
-	g_baseProc = ::SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(::CustomWindowProc));
+	// g_baseProc = ::SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(::CustomWindowProc));
+
+	enum { DWMWA_USE_IMMERSIVE_DARK_MODE = 20 };
+	BOOL useDarkMode = true;
+	DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode));
 
 	Scene::SetBackground(ColorF{0.3, 0.3, 0.3});
 
