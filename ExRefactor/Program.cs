@@ -1,4 +1,6 @@
-﻿record Appllle(int Monnney)
+﻿namespace ExRefactor;
+
+internal record Apple(int Monnney)
 {
     public int MoneyPlusOne() => Monnney + 1;
 };
@@ -7,7 +9,7 @@
 // 1. Alt + Enterで修正
 // 基本
 //----------------------------------------------------------------------------------------
-class Program
+internal static class Program
 {
     public static void Main()
     {
@@ -15,8 +17,8 @@ class Program
         // 2. リネーム機能
         // タイポしている部分を直す
         //----------------------------------------------------------------------------------------
-        var _appllle = new Appllle(55);
-        Console.WriteLine(_appllle.MoneyPlusOne());
+        var apple = new Apple(55);
+        Console.WriteLine(apple.MoneyPlusOne());
 
         //----------------------------------------------------------------------------------------
         // 3. メソッド抽出 
@@ -27,31 +29,43 @@ class Program
         int a3 = DateTime.Now.Month;
         int a2 = DateTime.Now.Day;
 
-        int aa = a1 + a2 + a3;
-        if (a2 % 2 == 0)
-        {
-            Console.WriteLine(a2);
-        }
-        else
-        {
-            Console.Error.WriteLine(a2);
-        }
+        myMethod(a1, a3, a2, 2.0f);
 
         //----------------------------------------------------------------------------------------
         // 4. マルチカーソル (カレット複製)
         // 行を一括で修正する
         //----------------------------------------------------------------------------------------
-        string cppCode1 = "int a = 2 コメント1";
-        string cppCode2 = "int b = 2 コメント2";
-        string cppCode3 = "int c = a + b コメント3";
-        string cppCode4 = "std::cout <<  c コメント4";
+        string cppCode1 = "int a = 2; // コメント1";
+        string cppCode2 = "int b = 2; // コメント2";
+        string cppCode3 = "int c = a + b; // コメント3";
+        string cppCode4 = "std::cout <<  c; // コメント4";
         Console.WriteLine(cppCode1);
 
         //----------------------------------------------------------------------------------------
         // 5. LiveTemplate (コードスニペット)
         //----------------------------------------------------------------------------------------
         var showList = new List<int>() { 1, 2, 3 };
+#if DEBUG
+        foreach (var aa in showList)
+        {
+            Console.WriteLine(aa);
+        }
+#endif
+
         Console.WriteLine("デバッグのときはこれを表示する");
+    }
+
+    private static void myMethod(int a1, int a333, int a2, float aaaa)
+    {
+        int aa = a1 + a2 + a333;
+        if (a2 % 2 == 0)
+        {
+            Console.WriteLine(aa);
+        }
+        else
+        {
+            Console.Error.WriteLine(a2);
+        }
     }
 
     //----------------------------------------------------------------------------------------
