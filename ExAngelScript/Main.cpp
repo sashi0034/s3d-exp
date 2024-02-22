@@ -5,13 +5,30 @@ namespace
 {
 	using namespace AngelScript;
 
-	std::array<asIScriptFunction*, 8> funcs{};
-
-	void __cdecl breakpoint(uint32 value, asIScriptFunction* func)
+	class ScriptFunctionWrapper
 	{
-		Print(U"Called {}"_fmt(value));
+	public:
+		ScriptFunctionWrapper() = default;
+		explicit ScriptFunctionWrapper(asIScriptFunction* ptr): m_ptr(ptr) { if (ptr) ptr->AddRef(); }
+		~ScriptFunctionWrapper() { if (m_ptr) m_ptr->Release(); }
+		// asIScriptFunction* operator->() const { return m_ptr; }
+		asIScriptFunction* operator*() const { return m_ptr; }
+		operator bool() const { return m_ptr; }
 
-		funcs[0] = func;
+	private:
+		asIScriptFunction* m_ptr{};
+	};
+
+	std::array<ScriptFunctionWrapper, 8> g_funcs{};
+
+	void __cdecl breakpoint(uint32 id, asIScriptFunction* func)
+	{
+		Print(U"Called {}"_fmt(id));
+
+		if (0 <= id && id < g_funcs.size())
+		{
+			g_funcs[id] = ScriptFunctionWrapper(func);
+		}
 	}
 
 	void __cdecl fire(uint32 value)
@@ -23,7 +40,6 @@ namespace
 void reloadScript(Script& script)
 {
 	ClearPrint();
-	funcs[0] = nullptr;
 
 	if (not script.reload())
 	{
@@ -43,10 +59,11 @@ void reloadScript(Script& script)
 		Print(U"succeeded");
 	}
 
-	if (funcs[0] != nullptr)
+	for (int i = 0; i < g_funcs.size(); ++i)
 	{
+		if (not g_funcs[i]) continue;
 		const auto ctx = script.GetEngine()->CreateContext();
-		ctx->Prepare(funcs[0]);
+		ctx->Prepare(*g_funcs[i]);
 		ctx->SetArgDWord(0, 45);
 		ctx->Execute();
 	}
