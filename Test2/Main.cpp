@@ -8,62 +8,110 @@ void callStart(Script main)
 	if (not exception.empty()) Console.writeln(exception);
 }
 
-void printAngelInfo(const AngelScript::asIScriptEngine& engine)
+// --------
+
+void printGlobalFunctionList(const AngelScript::asIScriptEngine& engine)
+{
+	for (int i = 0; i < engine.GetGlobalFunctionCount(); i++)
+	{
+		const auto f = engine.GetGlobalFunctionByIndex(i);
+		if (not f) continue;
+		const std::string_view ns = f->GetNamespace();
+		if (not ns.empty()) std::cout << std::format("namespace {} {{ ", ns);
+		std::cout << std::format("{};", f->GetDeclaration(false, false, false));
+		if (not ns.empty()) std::cout << " }";
+		std::cout << "\n";
+	}
+}
+
+void printGlobalPropertyList(const AngelScript::asIScriptEngine& engine)
+{
+	for (int i = 0; i < engine.GetGlobalPropertyCount(); i++)
+	{
+		const char* name;
+		const char* ns0;
+		int type;
+		engine.GetGlobalPropertyByIndex(i, &name, &ns0, &type, nullptr, nullptr, nullptr, nullptr);
+		const auto t = engine.GetTypeInfoById(type);
+		if (not t) continue;
+		std::string_view ns = ns0;
+		if (not ns.empty()) std::cout << std::format("namespace {} {{ ", ns);
+		std::cout << std::format("{} {};", t->GetName(), name);
+		if (not ns.empty()) std::cout << " }";
+		std::cout << "\n";
+	}
+}
+
+void printClassTypeList(const AngelScript::asIScriptEngine& engine)
 {
 	for (int i = 0; i < engine.GetObjectTypeCount(); i++)
 	{
 		const auto t = engine.GetObjectTypeByIndex(i);
 		if (not t) continue;
-		std::cout << std::format("type {}::{}\n", t->GetNamespace(), t->GetName());
+		const std::string_view ns = t->GetNamespace();
+		if (not ns.empty()) std::cout << std::format("namespace {} {{\n", ns);
+		std::cout << std::format("class {}", t->GetName());
+		if (t->GetSubTypeCount() > 0)
+		{
+			std::cout << "<";
+			for (int sub = 0; sub < t->GetSubTypeCount(); ++sub)
+			{
+				if (sub < t->GetSubTypeCount() - 1) std::cout << ", ";
+				const auto st = t->GetSubType(sub);
+				std::cout << st->GetName();
+			}
+
+			std::cout << ">";
+		}
+		std::cout << "{\n";
 		for (int j = 0; j < t->GetMethodCount(); ++j)
 		{
 			const auto m = t->GetMethodByIndex(j);
-			std::cout << std::format("\ttype_method {}\n", m->GetDeclaration(false, true, false));
-			std::cout << std::format("\ttype_method {}\n", m->GetDeclaration(false, true, false));
+			std::cout << std::format("\t{};\n", m->GetDeclaration(false, true, false));
 		}
 		for (int j = 0; j < t->GetPropertyCount(); ++j)
 		{
-			std::cout << std::format("\ttype_property {}\n", t->GetPropertyDeclaration(j, true));
+			std::cout << std::format("\t{};\n", t->GetPropertyDeclaration(j, true));
 		}
+		std::cout << "}\n";
+		if (not ns.empty()) std::cout << "}\n";
 	}
+}
 
-	for (int i = 0; i < engine.GetGlobalFunctionCount(); i++)
-	{
-		const auto f = engine.GetGlobalFunctionByIndex(i);
-		if (not f) continue;
-		std::cout << std::format("function {}\n", f->GetDeclaration(true, true, false));
-	}
-
-	for (int i = 0; i < engine.GetGlobalPropertyCount(); i++)
-	{
-		const char* name;
-		const char* ns;
-		int type;
-		engine.GetGlobalPropertyByIndex(i, &name, &ns, &type, nullptr, nullptr, nullptr, nullptr);
-		const auto t = engine.GetTypeInfoById(type);
-		if (not t) continue;
-		std::cout << std::format("property {}::{} {}::{}\n", t->GetNamespace(), t->GetName(), ns, name);
-	}
-
+void printEnumList(const AngelScript::asIScriptEngine& engine)
+{
 	for (int i = 0; i < engine.GetEnumCount(); i++)
 	{
 		const auto e = engine.GetEnumByIndex(i);
 		if (not e) continue;
-		std::cout << std::format("enum {}::{}\n", e->GetNamespace(), e->GetName());
+		const std::string_view ns = e->GetNamespace();
+		if (not ns.empty()) std::cout << std::format("namespace {} {{\n", ns);
+		std::cout << std::format("enum {} {{\n", e->GetName());
 		for (int j = 0; j < e->GetEnumValueCount(); ++j)
 		{
-			std::cout << std::format(
-				"\tenum_value {}\n", e->GetEnumValueByIndex(j, nullptr));
-			// std::cout << std::format(
-			// 	"enum_value {}::{}::{}\n", e->GetNamespace(), e->GetName(), e->GetEnumValueByIndex(j, nullptr));
+			std::cout << std::format("\t{},\n", e->GetEnumValueByIndex(j, nullptr));
 		}
+		std::cout << "}\n";
+		if (not ns.empty()) std::cout << "}\n";
 	}
+}
+
+void printAngelInfo(const AngelScript::asIScriptEngine& engine)
+{
+	printGlobalFunctionList(engine);
+
+	printGlobalPropertyList(engine);
+
+	printClassTypeList(engine);
+
+	printEnumList(engine);
 }
 
 void Main()
 {
-	Console.open();
+	// Console.open();
 	printAngelInfo(*Script::GetEngine());
+	return;
 
 	while (System::Update())
 	{
