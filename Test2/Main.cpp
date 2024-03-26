@@ -2,7 +2,7 @@
 
 void callStart(Script main)
 {
-	auto start = main.getFunction<void()>(U"start");
+	auto start = main.getFunction<void()>(U"main");
 	String exception;
 	start.tryCall(exception);
 	if (not exception.empty()) Console.writeln(exception);
@@ -121,13 +121,9 @@ void printAngelInfo(const AngelScript::asIScriptEngine& engine)
 
 void Main()
 {
-	// Console.open();
+	//Console.open();
 	printAngelInfo(*Script::GetEngine());
 	return;
-
-	while (System::Update())
-	{
-	}
 
 	Script main(U"script.as");
 
