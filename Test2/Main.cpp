@@ -89,7 +89,9 @@ void printEnumList(const AngelScript::asIScriptEngine& engine)
 		std::cout << std::format("enum {} {{\n", e->GetName());
 		for (int j = 0; j < e->GetEnumValueCount(); ++j)
 		{
-			std::cout << std::format("\t{},\n", e->GetEnumValueByIndex(j, nullptr));
+			std::cout << std::format("\t{}", e->GetEnumValueByIndex(j, nullptr));
+			if (j < e->GetEnumValueCount() - 1) std::cout << ",";
+			std::cout << "\n";
 		}
 		std::cout << "}\n";
 		if (not ns.empty()) std::cout << "}\n";
