@@ -110,13 +110,13 @@ void printEnumList(const AngelScript::asIScriptEngine& engine)
 
 void printAngelInfo(const AngelScript::asIScriptEngine& engine)
 {
-	printGlobalFunctionList(engine);
-
-	printGlobalPropertyList(engine);
+	printEnumList(engine);
 
 	printClassTypeList(engine);
 
-	printEnumList(engine);
+	printGlobalFunctionList(engine);
+
+	printGlobalPropertyList(engine);
 }
 
 void Main()
