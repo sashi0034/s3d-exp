@@ -64,6 +64,16 @@ void printClassTypeList(const AngelScript::asIScriptEngine& engine)
 			std::cout << ">";
 		}
 		std::cout << "{\n";
+		for (int j = 0; j < t->GetBehaviourCount(); ++j)
+		{
+			AngelScript::asEBehaviours behaviours;
+			const auto f = t->GetBehaviourByIndex(j, &behaviours);
+			if (behaviours == AngelScript::asBEHAVE_CONSTRUCT
+				|| behaviours == AngelScript::asBEHAVE_DESTRUCT)
+			{
+				std::cout << std::format("\t{};\n", f->GetDeclaration(false, true, false));
+			}
+		}
 		for (int j = 0; j < t->GetMethodCount(); ++j)
 		{
 			const auto m = t->GetMethodByIndex(j);
