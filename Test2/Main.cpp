@@ -121,9 +121,9 @@ void printAngelInfo(const AngelScript::asIScriptEngine& engine)
 
 void Main()
 {
-	//Console.open();
-	printAngelInfo(*Script::GetEngine());
-	return;
+	Console.open();
+	//printAngelInfo(*Script::GetEngine());
+	//return;
 
 	Script main(U"script.as");
 
@@ -131,15 +131,16 @@ void Main()
 
 	Console.writeln(main.getMessages());
 
-	callStart(main);
+	bool isInit{};
 	DirectoryWatcher directoryWatcher(U"./");
 
 	while (System::Update())
 	{
 		// TimeProfiler profiler(U"Main");
 
-		if (directoryWatcher.retrieveChanges().size() > 0)
+		if (directoryWatcher.retrieveChanges().size() > 0 || not isInit)
 		{
+			isInit = true;
 			Console.writeln(U"\nRELOAD ============================");
 			if (main.reload())
 			{

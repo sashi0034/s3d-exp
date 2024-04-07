@@ -1,8 +1,10 @@
 ﻿
+namespace A{
+    funcdef bool CALLBACK(int, int);
+}
 
 class A
 {
-    funcdef bool CALLBACK(int, int);
     bool Cmp(int a, int b)
     {
         count++;
@@ -14,8 +16,11 @@ class A
 void main()
 {
     A a;
+    
+    bool bb = true;
+    int dfdf = bb ? 99 : 11;
 
-    Print << 44;
+    Print << dfdf;
 
     // Create the delegate for the A::Cmp class method
     A::CALLBACK @func = A::CALLBACK(a.Cmp);
