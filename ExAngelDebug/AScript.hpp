@@ -6,6 +6,11 @@ namespace AScript_detail
 	using namespace AngelScript;
 
 	constexpr int breakPointLineCapacity = 8192;
+
+	inline void Output(std::string_view str)
+	{
+		std::cout << str;
+	}
 }
 
 class AScript_detail::AScriptDebugger
@@ -19,7 +24,9 @@ public:
 		if (not found) return;
 
 		const auto& breakPoint = found;
-		std::cout << "BreakPoint: " << breakPoint->sectionName << " " << breakPoint->line << std::endl;
+
+		std::cout << "Break point: " << breakPoint->sectionName << " " << breakPoint->line << std::endl;
+		listLocalVariables(context);
 	}
 
 	struct BreakPoint
@@ -54,11 +61,127 @@ private:
 
 	BreakPoint* findHitBreakPoint(const LineInfo& info)
 	{
+		if (info.line >= breakPointLineCapacity) return nullptr;
 		for (auto& p : m_breakPoints[info.line])
 		{
 			if (p.sectionName == info.sectionName) return &p;
 		}
 		return nullptr;
+	}
+
+	void listLocalVariables(asIScriptContext* ctx)
+	{
+		using namespace std;
+		if (ctx == nullptr) return;
+
+		const asIScriptFunction* func = ctx->GetFunction();
+		if (not func) return;
+
+		stringstream s;
+		for (asUINT n = 0; n < func->GetVarCount(); n++)
+		{
+			if (ctx->IsVarInScope(n))
+			{
+				// TODO: Allow user to set if members should be expanded or not
+				// Expand members by default to 3 recursive levels only
+				s << func->GetVarDecl(n) << " = " << ToString(
+					ctx->GetAddressOfVar(n), ctx->GetVarTypeId(n), 3, ctx->GetEngine()) << endl;
+			}
+		}
+		Output(s.str());
+		std::cout << std::flush;
+	}
+
+	std::string ToString(void* value, asUINT typeId, int expandMembers, asIScriptEngine* engine)
+	{
+		using namespace std;
+		if (value == nullptr)
+			return "<null>";
+		if (engine == nullptr) return "?";
+		stringstream s;
+		if (typeId == asTYPEID_VOID)
+			return "<void>";
+		else if (typeId == asTYPEID_BOOL)
+			return *(bool*)value ? "true" : "false";
+		else if (typeId == asTYPEID_INT8)
+			s << (int)*(signed char*)value;
+		else if (typeId == asTYPEID_INT16)
+			s << (int)*(signed short*)value;
+		else if (typeId == asTYPEID_INT32)
+			s << *(signed int*)value;
+		else if (typeId == asTYPEID_INT64)
+			s << *(asINT64*)value;
+		else if (typeId == asTYPEID_UINT8)
+			s << (unsigned int)*(unsigned char*)value;
+		else if (typeId == asTYPEID_UINT16)
+			s << (unsigned int)*(unsigned short*)value;
+		else if (typeId == asTYPEID_UINT32)
+			s << *(unsigned int*)value;
+		else if (typeId == asTYPEID_UINT64)
+			s << *(asQWORD*)value;
+		else if (typeId == asTYPEID_FLOAT)
+			s << *(float*)value;
+		else if (typeId == asTYPEID_DOUBLE)
+			s << *(double*)value;
+		else if ((typeId & asTYPEID_MASK_OBJECT) == 0)
+		{
+			// The type is an enum
+			s << *(asUINT*)value;
+			// Check if the value matches one of the defined enums
+			if (engine)
+			{
+				asITypeInfo* t = engine->GetTypeInfoById(typeId);
+				for (int n = t->GetEnumValueCount(); n-- > 0;)
+				{
+					int enumVal;
+					const char* enumName = t->GetEnumValueByIndex(n, &enumVal);
+					if (enumVal == *(int*)value)
+					{
+						s << ", " << enumName;
+						break;
+					}
+				}
+			}
+		}
+		else if (typeId & asTYPEID_SCRIPTOBJECT)
+		{
+			// Dereference handles, so we can see what it points to
+			if (typeId & asTYPEID_OBJHANDLE)
+				value = *(void**)value;
+			asIScriptObject* obj = (asIScriptObject*)value;
+			// Print the address of the object
+			s << "{" << obj << "}";
+			// Print the members
+			if (obj && expandMembers > 0)
+			{
+				asITypeInfo* type = obj->GetObjectType();
+				for (asUINT n = 0; n < obj->GetPropertyCount(); n++)
+				{
+					if (n == 0)
+						s << " ";
+					else
+						s << ", ";
+					s << type->GetPropertyDeclaration(n) << " = " << ToString(
+						obj->GetAddressOfProperty(n), obj->GetPropertyTypeId(n), expandMembers - 1, type->GetEngine());
+				}
+			}
+		}
+		else
+		{
+			// Dereference handles, so we can see what it points to
+			if (typeId & asTYPEID_OBJHANDLE)
+				value = *(void**)value;
+			// Print the address for reference types so it will be
+			// possible to see when handles point to the same object
+			asITypeInfo* type = engine->GetTypeInfoById(typeId);
+			if (type->GetFlags() & asOBJ_REF)
+				s << "{" << value << "}";
+			if (value)
+			{
+				// TODO
+			}
+		}
+		return s.str();
 	}
 };
 
@@ -87,7 +210,6 @@ namespace AScript_detail
 
 		if (r == asEXECUTION_EXCEPTION)
 		{
-			Logger << (U"[script exception]" + Unicode::Widen(module->context->GetExceptionString()));
 			return false;
 		}
 		else if (r == asEXECUTION_SUSPENDED)

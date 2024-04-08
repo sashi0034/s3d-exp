@@ -1,22 +1,10 @@
-
 void Test(){
-    int a = 3;
-    int b = a + 1;
-    int c = b * 2;
-    print_int(b);
-    print_int(c);
-}
-
-void print_int(int v){
-    Print << v;
-}
-
-
-void Test2(){
     A a;
     a.u = 2;
     int d = 7;
-
+    Emoji e2222;
+    int k1=9;
+    int kd = 6;
     ClearPrint();
 
     Print << "Called 'Test' " << d;
@@ -39,10 +27,16 @@ void k(){
 
 }
 
+class AC{
+    int c1;
+    int c2;
+}
+
 class A{
     int v;
     int k;
     int u;
+    AC ac;
 }
 
 
