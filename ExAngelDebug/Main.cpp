@@ -12,7 +12,7 @@ void Main()
 	const auto fullPath = FileSystem::FullPath(script.path()).narrow();
 	AScript_detail::s_debugger.AddBreakPoint({.line = 6, .sectionName = fullPath});
 
-	script.getFunction<void()>(U"Test").tryCall(error);
+	if (const auto fn = script.getFunction<void()>(U"Test")) fn.tryCall(error);
 
 	while (System::Update())
 	{

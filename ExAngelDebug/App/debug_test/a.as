@@ -1,9 +1,11 @@
 void Test(){
+    Array<int> gs12 = {1, 5, 8};
+
     A a;
     a.u = 2;
     int d = 7;
     Emoji e2222;
-    int k1=9;
+    int k1 = 9;
     int kd = 6;
     ClearPrint();
 

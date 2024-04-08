@@ -51,10 +51,10 @@ private:
 
 		static LineInfo Get(asIScriptContext* context)
 		{
-			LineInfo info;
+			LineInfo info{};
 			const char* sectionName;
 			info.line = context->GetLineNumber(0, &info.column, &sectionName);
-			info.sectionName = sectionName;
+			if (sectionName) info.sectionName = sectionName;
 			return info;
 		}
 	};
@@ -84,7 +84,7 @@ private:
 			{
 				// TODO: Allow user to set if members should be expanded or not
 				// Expand members by default to 3 recursive levels only
-				s << func->GetVarDecl(n) << " = " << ToString(
+				s << func->GetVarDecl(n) << " = " << toString(
 					ctx->GetAddressOfVar(n), ctx->GetVarTypeId(n), 3, ctx->GetEngine()) << endl;
 			}
 		}
@@ -92,7 +92,7 @@ private:
 		std::cout << std::flush;
 	}
 
-	std::string ToString(void* value, asUINT typeId, int expandMembers, asIScriptEngine* engine)
+	std::string toString(void* value, asUINT typeId, int expandMembers, asIScriptEngine* engine)
 	{
 		using namespace std;
 		if (value == nullptr)
@@ -161,7 +161,7 @@ private:
 						s << " ";
 					else
 						s << ", ";
-					s << type->GetPropertyDeclaration(n) << " = " << ToString(
+					s << type->GetPropertyDeclaration(n) << " = " << toString(
 						obj->GetAddressOfProperty(n), obj->GetPropertyTypeId(n), expandMembers - 1, type->GetEngine());
 				}
 			}
